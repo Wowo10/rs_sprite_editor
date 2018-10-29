@@ -37,7 +37,9 @@ fn main() {
 
 	let mut event_pump = sdl_context.event_pump().unwrap();
 
-	'running: loop {
+	let mut exit = false;
+
+	while !exit {
 		use sdl2::event::Event;
 		use sdl2::keyboard::Keycode;
 
@@ -52,7 +54,7 @@ fn main() {
 				| Event::KeyDown {
 					keycode: Some(Keycode::Escape),
 					..
-				} => break 'running,
+				} => exit = true,
 				_ => {}
 			}
 		}
