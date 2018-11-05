@@ -37,9 +37,11 @@ fn main() {
 
 	let mut event_pump = sdl_context.event_pump().unwrap();
 
-	let mut exit = false;
+	//let mut exit = false;
 
-	while !exit {
+	let mut canvas = window.into_canvas().build().unwrap();
+
+	'running: loop {
 		use sdl2::event::Event;
 		use sdl2::keyboard::Keycode;
 
@@ -54,22 +56,31 @@ fn main() {
 				| Event::KeyDown {
 					keycode: Some(Keycode::Escape),
 					..
-				} => exit = true,
+				} => break 'running,
 				_ => {}
 			}
 		}
 
-		let ui = imgui_sdl2.frame(&window, &mut imgui, &event_pump);
-		ui.show_demo_window(&mut true);
+		let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
 
+		canvas.window_mut().gl_make_current(&_gl_context).unwrap();
 		unsafe {
-			gl::ClearColor(0.2, 0.2, 0.2, 1.0);
+			gl::ClearColor(0.2, 0.2, 0.8, 1.0);
 			gl::Clear(gl::COLOR_BUFFER_BIT);
 		}
+		unsafe { gl::Flush() };
 
+		canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
+		canvas
+			.draw_rect(sdl2::rect::Rect::new(100, 100, 200, 200))
+			.unwrap();
+		unsafe { gl::Flush() };
+
+		canvas.window_mut().gl_make_current(&_gl_context).unwrap();
 		renderer.render(ui);
+		unsafe { gl::Flush() };
 
-		window.gl_swap_window();
+		canvas.present();
 
 		::std::thread::sleep(::std::time::Duration::new(0, 1_000_000_000u32 / 60));
 	}
