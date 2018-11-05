@@ -4,6 +4,8 @@ extern crate imgui_opengl_renderer;
 extern crate sdl2;
 extern crate sdl2imgui;
 
+use imgui::*;
+
 fn main() {
 	let sdl_context = sdl2::init().unwrap();
 	let video = sdl_context.video().unwrap();
@@ -62,6 +64,14 @@ fn main() {
 		}
 
 		let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
+
+		let window = ui
+			.window(im_str!("ImguiWindow"))
+			.size((300.0, 300.0), ImGuiCond::Always);
+
+		window.build(|| {
+			ui.text(im_str!("Pick a color"));
+		});
 
 		canvas.window_mut().gl_make_current(&_gl_context).unwrap();
 		unsafe {
