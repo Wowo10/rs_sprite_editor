@@ -6,8 +6,7 @@ extern crate sdl2imgui;
 
 use std::path::Path;
 
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
+use sdl2::pixels::Color;
 use sdl2::rect::Point;
 use sdl2::rect::Rect;
 use std::time::Duration;
@@ -28,11 +27,6 @@ fn main() {
 		.opengl()
 		.build()
 		.unwrap();
-	// .position_centered()
-	// .resizable()
-	// .opengl()
-	// .build()
-	// .unwrap();
 
 	let mut canvas = window.into_canvas()
         .accelerated().build().unwrap();
@@ -41,8 +35,6 @@ fn main() {
 	canvas.set_draw_color(sdl2::pixels::Color::RGBA(0,0,0,255));
 
 	let mut timer = sdl_context.timer().unwrap();
-
-    //let mut event_pump = sdl_context.event_pump().unwrap();
 
 	let temp_surface = sdl2::surface::Surface::load_bmp(Path::new("assets/characters.bmp")).unwrap();
     let texture = texture_creator.create_texture_from_surface(&temp_surface).unwrap();
@@ -103,20 +95,22 @@ fn main() {
 		}
 
 		let ticks = timer.ticks() as i32;
+		unsafe{ gl::Flush() };
 
 		let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
 		ui.show_demo_window(&mut true);
+		unsafe{ gl::Flush() };
 
 		unsafe {
 			gl::ClearColor(0.2, 0.2, 0.2, 1.0);
 			gl::Clear(gl::COLOR_BUFFER_BIT);
 		}
+		unsafe{ gl::Flush() };
 
 		renderer.render(ui);
 
-		// window.gl_swap_window();
-
-		// ::std::thread::sleep(::std::time::Duration::new(0, 1_000_000_000u32 / 60));
+		unsafe{ gl::Flush() };
+		//////////////////////////////////
 
 		source_rect_0.set_x(32 * ((ticks / 100) % frames_per_anim));
         dest_rect_0.set_x(1 * ((ticks / 14) % 768) - 128);
@@ -127,12 +121,19 @@ fn main() {
         source_rect_2.set_x(32 * ((ticks / 100) % frames_per_anim));
         dest_rect_2.set_x(1 * ((ticks / 10) % 768) - 128);
 
+		canvas.set_draw_color(Color::RGB(255, 210, 0));
 		canvas.clear();
+
+		unsafe{ gl::Flush() };
         // copy the frame to the canvas
         canvas.copy_ex(&texture, Some(source_rect_0), Some(dest_rect_0), 0.0, None, false, false).unwrap();
+		unsafe{ gl::Flush() };
         canvas.copy_ex(&texture, Some(source_rect_1), Some(dest_rect_1), 0.0, None, true, false).unwrap();
+		unsafe{ gl::Flush() };
         canvas.copy_ex(&texture, Some(source_rect_2), Some(dest_rect_2), 0.0, None, false, false).unwrap();
+		unsafe{ gl::Flush() };
         canvas.present();
+		unsafe{ gl::Flush() };
 
         std::thread::sleep(Duration::from_millis(100));
 	}
