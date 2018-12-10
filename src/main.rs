@@ -1,11 +1,9 @@
 extern crate gl;
 extern crate imgui;
 extern crate imgui_opengl_renderer;
-//extern crate imgui_sdl2;
 extern crate sdl2;
 
 mod lib;
-
 use lib::*;
 
 use sdl2::rect::Point;
@@ -13,8 +11,17 @@ use sdl2::rect::Rect;
 use std::path::Path;
 
 fn main() {
-    let sdl_context = sdl2::init().unwrap();
-    let video = sdl_context.video().unwrap();
+    let sdl_context = match sdl2::init() {
+        Ok(sdl_context) => sdl_context,
+        Err(err) => panic!("SDL could not initialize!  SDL_Error: {}", err),
+    };
+    let video = match sdl_context.video() {
+        Ok(video) => video,
+        Err(err) => panic!(
+            "Could not obtain handle to the video subsystem! SDL_Error: {}",
+            err
+        ),
+    };
 
     {
         let gl_attr = video.gl_attr();
@@ -22,17 +29,22 @@ fn main() {
         gl_attr.set_context_version(3, 1);
     }
 
-    let window = video
+    let window = match video
         .window("rust-imgui-sdl2 demo", 1000, 1000)
         .position_centered()
         .resizable()
         .opengl()
         .build()
-        .unwrap();
+    {
+        Ok(window) => window,
+        Err(err) => panic!("SDL could not create a window! SDL_Error: {}.", err),
+    };
 
-    let _gl_context = window
-        .gl_create_context()
-        .expect("Couldn't create GL context");
+    let _gl_context = match window.gl_create_context() {
+        Ok(gl_context) => gl_context,
+        Err(err) => panic!("SDL could not create Gl Context: {}.", err),
+    };
+
     gl::load_with(|s| video.gl_get_proc_address(s) as _);
 
     let mut imgui = imgui::ImGui::init();
@@ -43,18 +55,28 @@ fn main() {
     let renderer =
         imgui_opengl_renderer::Renderer::new(&mut imgui, |s| video.gl_get_proc_address(s) as _);
 
-    let mut event_pump = sdl_context.event_pump().unwrap();
+    let mut event_pump = match sdl_context.event_pump() {
+        Ok(event_pump) => event_pump,
+        Err(err) => panic!("SDL could not get event_pump: {}.", err),
+    };
 
-    let mut canvas = window.into_canvas().accelerated().build().unwrap();
+    let mut canvas = match window.into_canvas().accelerated().build() {
+        Ok(canvas) => canvas,
+        Err(err) => panic!("SDL could not convart into canvas: {}.", err),
+    };
+
     let texture_creator = canvas.texture_creator();
 
-    let mut timer = sdl_context.timer().unwrap();
+    let mut timer = sdl_context.timer().expect("Could not create timer.");
 
-    let temp_surface =
-        sdl2::surface::Surface::load_bmp(Path::new("assets/characters.bmp")).unwrap();
-    let texture = texture_creator
-        .create_texture_from_surface(&temp_surface)
-        .unwrap();
+    let temp_surface = match sdl2::surface::Surface::load_bmp(Path::new("assets/characters.bmp")) {
+        Ok(temp_surface) => temp_surface,
+        Err(err) => panic!("SDL could not create surface: {}.", err),
+    };
+    let texture = match texture_creator.create_texture_from_surface(&temp_surface) {
+        Ok(texture) => texture,
+        Err(err) => panic!("SDL could not create texture: {}.", err),
+    };
 
     let frames_per_anim = 4;
     let sprite_tile_size = (32, 32);
@@ -96,7 +118,7 @@ fn main() {
 
         let ticks = timer.ticks() as i32;
 
-		source_rect_0.set_x(32 * ((ticks / 100) % frames_per_anim));
+        source_rect_0.set_x(32 * ((ticks / 100) % frames_per_anim));
         dest_rect_0.set_x(1 * ((ticks / 14) % 768) - 128);
 
         source_rect_1.set_x(32 * ((ticks / 100) % frames_per_anim));
@@ -110,9 +132,36 @@ fn main() {
         canvas.set_draw_color(sdl2::pixels::Color::RGB(20, 200, 20));
         canvas.clear();
 
-        canvas.copy_ex(&texture, Some(source_rect_0), Some(dest_rect_0), 0.0, None, false, false).unwrap();
-        canvas.copy_ex(&texture, Some(source_rect_1), Some(dest_rect_1), 0.0, None, true, false).unwrap();
-        canvas.copy_ex(&texture, Some(source_rect_2), Some(dest_rect_2), 0.0, None, false, false).unwrap();
+        canvas
+            .copy_ex(
+                &texture,
+                Some(source_rect_0),
+                Some(dest_rect_0),
+                0.0,
+                None,
+                false,
+                false,
+            ).unwrap();
+        canvas
+            .copy_ex(
+                &texture,
+                Some(source_rect_1),
+                Some(dest_rect_1),
+                0.0,
+                None,
+                true,
+                false,
+            ).unwrap();
+        canvas
+            .copy_ex(
+                &texture,
+                Some(source_rect_2),
+                Some(dest_rect_2),
+                0.0,
+                None,
+                false,
+                false,
+            ).unwrap();
 
         //ui render
         let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
