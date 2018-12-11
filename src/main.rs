@@ -13,12 +13,13 @@ use std::path::Path;
 use sdl2::image::{LoadTexture, INIT_JPG, INIT_PNG};
 use sdl2::render::TextureCreator;
 
-enum ImageType{
+use imgui::*;
+
+enum ImageType {
     doodad,
     spritesheet,
-    album
+    album,
 }
-
 
 fn main() {
     let sdl_context = match sdl2::init() {
@@ -143,7 +144,32 @@ fn main() {
         canvas.draw_rect(dest_rect).unwrap();
 
         let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
-        ui.show_demo_window(&mut true);
+
+        let mut slide = 3;
+
+        ui.window(im_str!("test"))
+            .size((300.0, 100.0), ImGuiCond::Appearing)
+            .position((20.0, 140.0), ImGuiCond::Appearing)
+            .build(|| {
+                ui.text(im_str!("Hello world!"));
+                ui.text(im_str!("こんにちは世界！"));
+                ui.text(im_str!("This...is...imgui-rs!"));
+                ui.separator();
+
+                ui.slider_int(im_str!("slider"), &mut slide,0,1 ).build();
+
+                ui.separator();
+
+                ui.slider_float(im_str!(""), &mut scale, 0.0, 4.0).build();
+
+                ui.separator();
+                let mouse_pos = ui.imgui().mouse_pos();
+                ui.text(im_str!(
+                    "Mouse Position: ({:.1},{:.1})",
+                    mouse_pos.0,
+                    mouse_pos.1
+                ));
+            });
 
         canvas.window_mut().gl_make_current(&gl_context).unwrap();
         renderer.render(ui);
