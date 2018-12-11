@@ -10,6 +10,16 @@ use sdl2::rect::Point;
 use sdl2::rect::Rect;
 use std::path::Path;
 
+use sdl2::image::{LoadTexture, INIT_JPG, INIT_PNG};
+use sdl2::render::TextureCreator;
+
+enum ImageType{
+    doodad,
+    spritesheet,
+    album
+}
+
+
 fn main() {
     let sdl_context = match sdl2::init() {
         Ok(sdl_context) => sdl_context,
@@ -40,6 +50,8 @@ fn main() {
         Err(err) => panic!("SDL could not create a window! SDL_Error: {}.", err),
     };
 
+    sdl2::image::init(INIT_PNG | INIT_JPG).expect("Counld not init SDL Image.");
+
     let gl_context = match window.gl_create_context() {
         Ok(gl_context) => gl_context,
         Err(err) => panic!("SDL could not create Gl Context: {}.", err),
@@ -69,22 +81,22 @@ fn main() {
 
     let mut timer = sdl_context.timer().expect("Could not create timer.");
 
-    let temp_surface = match sdl2::surface::Surface::load_bmp(Path::new("assets/characters.bmp")) {
-        Ok(temp_surface) => temp_surface,
-        Err(err) => panic!("SDL could not create surface: {}.", err),
-    };
-    let texture = match texture_creator.create_texture_from_surface(&temp_surface) {
-        Ok(texture) => texture,
-        Err(err) => panic!("SDL could not create texture: {}.", err),
-    };
+    let texture = texture_creator
+        .load_texture(Path::new("resources/spritesheets/anim.png"))
+        .unwrap();
 
-    let frames_per_anim = 4;
-    let sprite_tile_size = (32, 32);
+    let frames_per_anim = 6;
+    let sprite_tile_size = (52, 76);
 
-    // Baby - walk animation
-    let mut source_rect_0 = Rect::new(0, 0, sprite_tile_size.0, sprite_tile_size.0);
-    let mut dest_rect_0 = Rect::new(0, 0, sprite_tile_size.0 * 4, sprite_tile_size.0 * 4);
-    dest_rect_0.center_on(Point::new(-64, 120));
+    let mut source_rect = Rect::new(0, 0, sprite_tile_size.0, sprite_tile_size.1);
+
+    let dest_rect = Rect::new(20, 20, sprite_tile_size.0, sprite_tile_size.1);
+
+    let kek = dest_rect.center();
+
+    println!("{:?}, {:?}", kek, texture.query());
+
+    let mut scale = 4.0f32;
 
     'running: loop {
         use sdl2::event::Event;
@@ -108,31 +120,30 @@ fn main() {
 
         let ticks = timer.ticks() as i32;
 
-        source_rect_0.set_x(32 * ((ticks / 100) % frames_per_anim));
-        dest_rect_0.set_x(1 * ((ticks / 14) % 768) - 128);
-        
+        source_rect.set_x(sprite_tile_size.0 as i32 * ((ticks / 1000) % frames_per_anim));
+
         canvas.set_draw_color(sdl2::pixels::Color::RGB(20, 200, 20));
         canvas.clear();
+
+        canvas.set_scale(scale, scale).unwrap();
 
         canvas
             .copy_ex(
                 &texture,
-                Some(source_rect_0),
-                Some(dest_rect_0),
+                Some(source_rect),
+                Some(dest_rect),
                 0.0,
                 None,
                 false,
                 false,
             ).unwrap();
 
-        //ui render
+        // RED RECT
+        canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
+        canvas.draw_rect(dest_rect).unwrap();
+
         let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
         ui.show_demo_window(&mut true);
-
-        canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
-        canvas
-            .draw_rect(sdl2::rect::Rect::new(100, 100, 200, 200))
-            .unwrap();
 
         canvas.window_mut().gl_make_current(&gl_context).unwrap();
         renderer.render(ui);

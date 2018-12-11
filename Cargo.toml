@@ -5,6 +5,10 @@ authors = ["Wowo10 <wojtekwojtek529@gmail.com>"]
 
 [dependencies]
 imgui = "0.0.20"
-sdl2 = "^0"
 gl = "0.10.0"
 imgui-opengl-renderer = "0.2"
+
+[dependencies.sdl2]
+version = "0.32.0"
+default-features = false
+features = ["image"]
