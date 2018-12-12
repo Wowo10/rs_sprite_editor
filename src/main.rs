@@ -21,6 +21,28 @@ enum ImageType {
     album,
 }
 
+fn rotate_point(start: Point, origin: Point, degrees: f32) -> Point {
+    let DEG2RAD = 3.14159 / 180.0;
+
+    let radians = degrees * DEG2RAD;
+
+    let mut point = start;
+
+    // translate point back to origin:
+    point.x -= origin.x;
+    point.y -= origin.y;
+
+    // rotate point
+    let xnew: i32 = ((point.x as f32 * radians.cos()) - (point.y as f32 * radians.sin())) as i32;
+    let ynew: i32 = ((point.x as f32 * radians.sin()) + (point.y as f32 * radians.cos())) as i32;
+
+    // translate point back:
+    point.x = xnew + origin.x;
+    point.y = ynew + origin.y;
+
+    point
+}
+
 fn main() {
     let sdl_context = match sdl2::init() {
         Ok(sdl_context) => sdl_context,
@@ -107,6 +129,7 @@ fn main() {
     //println!("{:?}, {:?}", kek, texture.query());
 
     let mut scale = 1.0f32;
+    let mut rotation = 0.0f32;
 
     'running: loop {
         use sdl2::event::Event;
@@ -149,58 +172,42 @@ fn main() {
                 &texture,
                 Some(source_rect),
                 Some(temp_rect),
-                0.0,
+                rotation.into(),
                 None,
                 false,
                 false,
             ).unwrap();
 
-        // dest_rect.set_x(100);
-        // canvas
-        //     .copy_ex(
-        //         &texture,
-        //         Some(source_rect),
-        //         Some(dest_rect),
-        //         0.0,
-        //         None,
-        //         false,
-        //         false,
-        //     ).unwrap();
-
-        // dest_rect.set_x(200);
-        // canvas
-        //     .copy_ex(
-        //         &texture,
-        //         Some(source_rect),
-        //         Some(dest_rect),
-        //         0.0,
-        //         None,
-        //         false,
-        //         false,
-        //     ).unwrap();
-
         // RED RECT
         canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
-        canvas.draw_rect(temp_rect).unwrap();
+        //canvas.draw_rect(temp_rect).unwrap();
+
+        let top_left = rotate_point(temp_rect.top_left(), temp_rect.center(), rotation);
+        let top_right = rotate_point(temp_rect.top_right(), temp_rect.center(), rotation);
+        let bottom_left = rotate_point(temp_rect.bottom_left(), temp_rect.center(), rotation);
+        let bottom_right = rotate_point(temp_rect.bottom_right(), temp_rect.center(), rotation);
+
+        canvas.draw_line(top_left, top_right).unwrap();
+        canvas.draw_line(bottom_left, top_left).unwrap();
+        canvas.draw_line(bottom_right, bottom_left).unwrap();
+        canvas.draw_line(top_right, bottom_right).unwrap();
 
         let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
-
-        let mut slide = 3;
 
         ui.window(im_str!("test"))
             .size((300.0, 500.0), ImGuiCond::Appearing)
             .position((600.0, 140.0), ImGuiCond::Appearing)
             .build(|| {
-                ui.text(im_str!("Hello world!"));
-                ui.text(im_str!("こんにちは世界！"));
-                ui.text(im_str!("This...is...imgui-rs!"));
+                ui.text(im_str!("A Panel wow!"));
                 ui.separator();
 
-                ui.slider_int(im_str!("slider"), &mut slide, 0, 1).build();
+                ui.slider_float(im_str!("scale"), &mut scale, 0.5, 6.0)
+                    .build();
 
                 ui.separator();
 
-                ui.slider_float(im_str!(""), &mut scale, 0.5, 6.0).build();
+                ui.slider_float(im_str!("rotation"), &mut rotation, 0.0, 360.0)
+                    .build();
 
                 ui.separator();
                 let mouse_pos = ui.imgui().mouse_pos();
