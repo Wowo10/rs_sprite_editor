@@ -91,13 +91,22 @@ fn main() {
 
     let mut source_rect = Rect::new(0, 0, sprite_tile_size.0, sprite_tile_size.1);
 
-    let dest_rect = Rect::new(20, 20, sprite_tile_size.0, sprite_tile_size.1);
+    let mut dest_rect = Rect::new(20, 20, sprite_tile_size.0, sprite_tile_size.1);
 
-    let kek = dest_rect.center();
+    println!("{:?}, {:?}", dest_rect, dest_rect.center());
 
-    println!("{:?}, {:?}", kek, texture.query());
+    //dest_rect.center_on(Point::new(100,100));
 
-    let mut scale = 4.0f32;
+    // dest_rect.set_x(100);
+    // // dest_rect.set_y(100);
+
+    // println!("{:?}, {:?}", dest_rect, dest_rect.center());
+
+    // let kek = dest_rect.center();
+
+    //println!("{:?}, {:?}", kek, texture.query());
+
+    let mut scale = 1.0f32;
 
     'running: loop {
         use sdl2::event::Event;
@@ -128,39 +137,70 @@ fn main() {
 
         canvas.set_scale(scale, scale).unwrap();
 
+        let tempx = if dest_rect.x != 0 { dest_rect.x } else { 1 } as f32 / scale;
+        let tempy = if dest_rect.y != 0 { dest_rect.x } else { 1 } as f32 / scale;
+
+        let mut temp_rect = dest_rect;
+
+        temp_rect.set_x(tempx as i32);
+        temp_rect.set_y(tempy as i32);
         canvas
             .copy_ex(
                 &texture,
                 Some(source_rect),
-                Some(dest_rect),
+                Some(temp_rect),
                 0.0,
                 None,
                 false,
                 false,
             ).unwrap();
 
+        // dest_rect.set_x(100);
+        // canvas
+        //     .copy_ex(
+        //         &texture,
+        //         Some(source_rect),
+        //         Some(dest_rect),
+        //         0.0,
+        //         None,
+        //         false,
+        //         false,
+        //     ).unwrap();
+
+        // dest_rect.set_x(200);
+        // canvas
+        //     .copy_ex(
+        //         &texture,
+        //         Some(source_rect),
+        //         Some(dest_rect),
+        //         0.0,
+        //         None,
+        //         false,
+        //         false,
+        //     ).unwrap();
+
         // RED RECT
         canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
-        canvas.draw_rect(dest_rect).unwrap();
+        canvas.draw_rect(temp_rect).unwrap();
 
         let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
 
         let mut slide = 3;
 
         ui.window(im_str!("test"))
-            .size((300.0, 100.0), ImGuiCond::Appearing)
-            .position((20.0, 140.0), ImGuiCond::Appearing)
+            .size((300.0, 500.0), ImGuiCond::Appearing)
+            .position((600.0, 140.0), ImGuiCond::Appearing)
             .build(|| {
                 ui.text(im_str!("Hello world!"));
                 ui.text(im_str!("こんにちは世界！"));
                 ui.text(im_str!("This...is...imgui-rs!"));
                 ui.separator();
 
-                ui.slider_int(im_str!("slider"), &mut slide,0,1 ).build();
+                ui.slider_int(im_str!("slider"), &mut slide, 0, 1).build();
 
                 ui.separator();
 
-                ui.slider_float(im_str!(""), &mut scale, 0.0, 4.0).build();
+                ui.slider_float(im_str!(""), &mut scale, 0.5, 6.0).build();
 
                 ui.separator();
                 let mouse_pos = ui.imgui().mouse_pos();
