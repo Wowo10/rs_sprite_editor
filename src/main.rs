@@ -14,6 +14,12 @@ use sdl2::image::{LoadTexture, INIT_JPG, INIT_PNG};
 
 use imgui::*;
 
+mod fragment;
+use fragment::*;
+
+mod mymath;
+use mymath::{check_rect, PointInRectangle};
+
 fn rotate_point(start: Point, origin: Point, degrees: f32) -> Point {
     let deg2_rad = 3.14159 / 180.0;
 
@@ -36,7 +42,11 @@ fn rotate_point(start: Point, origin: Point, degrees: f32) -> Point {
     point
 }
 
-fn draw_rectangle_around_active(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, active_rect: Rect, rotation: f32) {
+fn draw_rectangle_around_active(
+    canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
+    active_rect: Rect,
+    rotation: f32,
+) {
     let top_left = rotate_point(active_rect.top_left(), active_rect.center(), rotation);
     let top_right = rotate_point(active_rect.top_right(), active_rect.center(), rotation);
     let bottom_left = rotate_point(active_rect.bottom_left(), active_rect.center(), rotation);
@@ -113,15 +123,12 @@ fn main() {
         .load_texture(Path::new("resources/spritesheets/anim.png"))
         .unwrap();
 
-    
-
     let frames_per_anim = 6;
     let sprite_tile_size = (52, 76);
 
     let mut source_rect = Rect::new(0, 0, sprite_tile_size.0, sprite_tile_size.1);
 
     let mut dest_rect = Rect::new(20, 20, sprite_tile_size.0, sprite_tile_size.1);
-
 
     let mut scale = 1.0f32;
     let mut rotation = 0.0f32;
@@ -136,7 +143,6 @@ fn main() {
     let source_rect2 = Rect::new(0, 0, size.width, size.height);
 
     let dest_rect2 = Rect::new(100, 20, size.width, size.height);
-
 
     let mut scale2 = 1.0f32;
     let mut rotation2 = 0.0f32;
@@ -159,6 +165,17 @@ fn main() {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => break 'running,
+                Event::MouseButtonDown { x, y, which, .. } => {
+                    let check = check_rect(active, Point::new(x, y));
+                    let check2 = PointInRectangle(
+                        active.top_left(),
+                        active.top_right(),
+                        active.bottom_right(),
+                        active.bottom_left(),
+                        Point::new(x, y),
+                    );
+                    println!("which: {}, check: {}, check2: {}", which, check, check2);
+                }
                 _ => {}
             }
         }
@@ -188,7 +205,6 @@ fn main() {
                 false,
             ).unwrap();
 
-
         // RED RECT - remeber to tace active scale
         canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
         draw_rectangle_around_active(&mut canvas, temp_rect, rotation);
@@ -198,7 +214,12 @@ fn main() {
         let tempx = if dest_rect2.x != 0 { dest_rect2.x } else { 1 } as f32 / scale2;
         let tempy = if dest_rect2.y != 0 { dest_rect2.x } else { 1 } as f32 / scale2;
 
-        let temp_rect2 = Rect::new(tempx as i32, tempy as i32, dest_rect2.width(), dest_rect2.height());
+        let temp_rect2 = Rect::new(
+            tempx as i32,
+            tempy as i32,
+            dest_rect2.width(),
+            dest_rect2.height(),
+        );
         canvas
             .copy_ex(
                 &texture2,
@@ -209,7 +230,6 @@ fn main() {
                 false,
                 false,
             ).unwrap();
-
 
         let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
 
