@@ -11,20 +11,13 @@ use sdl2::rect::Rect;
 use std::path::Path;
 
 use sdl2::image::{LoadTexture, INIT_JPG, INIT_PNG};
-use sdl2::render::TextureCreator;
 
 use imgui::*;
 
-enum ImageType {
-    doodad,
-    spritesheet,
-    album,
-}
-
 fn rotate_point(start: Point, origin: Point, degrees: f32) -> Point {
-    let DEG2RAD = 3.14159 / 180.0;
+    let deg2_rad = 3.14159 / 180.0;
 
-    let radians = degrees * DEG2RAD;
+    let radians = degrees * deg2_rad;
 
     let mut point = start;
 
@@ -120,6 +113,8 @@ fn main() {
         .load_texture(Path::new("resources/spritesheets/anim.png"))
         .unwrap();
 
+    
+
     let frames_per_anim = 6;
     let sprite_tile_size = (52, 76);
 
@@ -127,21 +122,26 @@ fn main() {
 
     let mut dest_rect = Rect::new(20, 20, sprite_tile_size.0, sprite_tile_size.1);
 
-    println!("{:?}, {:?}", dest_rect, dest_rect.center());
-
-    //dest_rect.center_on(Point::new(100,100));
-
-    // dest_rect.set_x(100);
-    // // dest_rect.set_y(100);
-
-    // println!("{:?}, {:?}", dest_rect, dest_rect.center());
-
-    // let kek = dest_rect.center();
-
-    //println!("{:?}, {:?}", kek, texture.query());
 
     let mut scale = 1.0f32;
     let mut rotation = 0.0f32;
+
+    /////// another texture
+    let texture2 = texture_creator
+        .load_texture(Path::new("resources/doodads/arrow.png"))
+        .unwrap();
+
+    let size = texture2.query();
+
+    let source_rect2 = Rect::new(0, 0, size.width, size.height);
+
+    let dest_rect2 = Rect::new(100, 20, size.width, size.height);
+
+
+    let mut scale2 = 1.0f32;
+    let mut rotation2 = 0.0f32;
+
+    let mut active = &mut dest_rect;
 
     'running: loop {
         use sdl2::event::Event;
@@ -172,13 +172,11 @@ fn main() {
 
         canvas.set_scale(scale, scale).unwrap();
 
-        let tempx = if dest_rect.x != 0 { dest_rect.x } else { 1 } as f32 / scale;
-        let tempy = if dest_rect.y != 0 { dest_rect.x } else { 1 } as f32 / scale;
+        let tempx = if active.x != 0 { active.x } else { 1 } as f32 / scale;
+        let tempy = if active.y != 0 { active.x } else { 1 } as f32 / scale;
 
-        let mut temp_rect = dest_rect;
+        let temp_rect = Rect::new(tempx as i32, tempy as i32, active.width(), active.height());
 
-        temp_rect.set_x(tempx as i32);
-        temp_rect.set_y(tempy as i32);
         canvas
             .copy_ex(
                 &texture,
@@ -190,9 +188,28 @@ fn main() {
                 false,
             ).unwrap();
 
-        // RED RECT
+
+        // RED RECT - remeber to tace active scale
         canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
         draw_rectangle_around_active(&mut canvas, temp_rect, rotation);
+
+        canvas.set_scale(scale2, scale2).unwrap();
+
+        let tempx = if dest_rect2.x != 0 { dest_rect2.x } else { 1 } as f32 / scale2;
+        let tempy = if dest_rect2.y != 0 { dest_rect2.x } else { 1 } as f32 / scale2;
+
+        let temp_rect2 = Rect::new(tempx as i32, tempy as i32, dest_rect2.width(), dest_rect2.height());
+        canvas
+            .copy_ex(
+                &texture2,
+                Some(source_rect2),
+                Some(temp_rect2),
+                rotation2.into(),
+                None,
+                false,
+                false,
+            ).unwrap();
+
 
         let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
 
