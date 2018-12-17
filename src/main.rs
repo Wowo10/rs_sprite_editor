@@ -18,7 +18,7 @@ mod fragment;
 use fragment::*;
 
 mod mymath;
-use mymath::{check_rect, PointInRectangle};
+use mymath::check_rect;
 
 fn rotate_point(start: Point, origin: Point, degrees: f32) -> Point {
     let deg2_rad = 3.14159 / 180.0;
@@ -167,14 +167,7 @@ fn main() {
                 } => break 'running,
                 Event::MouseButtonDown { x, y, which, .. } => {
                     let check = check_rect(active, Point::new(x, y));
-                    let check2 = PointInRectangle(
-                        active.top_left(),
-                        active.top_right(),
-                        active.bottom_right(),
-                        active.bottom_left(),
-                        Point::new(x, y),
-                    );
-                    println!("which: {}, check: {}, check2: {}", which, check, check2);
+                    println!("which: {}, check: {}", which, check);
                 }
                 _ => {}
             }
