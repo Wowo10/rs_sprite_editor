@@ -80,7 +80,7 @@ fn main() {
     }
 
     let window = match video
-        .window("rust-imgui-sdl2 demo", 1000, 1000)
+        .window("rust-imgui-sdl2 demo", 1000, 700)
         .position_centered()
         .resizable()
         .opengl()
@@ -130,7 +130,7 @@ fn main() {
 
     let mut source_rect = Rect::new(0, 0, sprite_tile_size.0, sprite_tile_size.1);
 
-    let mut dest_rect = Rect::new(400, 400, sprite_tile_size.0, sprite_tile_size.1);
+    let mut dest_rect = Rect::new(20, 20, sprite_tile_size.0, sprite_tile_size.1);
 
     let mut scale = 1.0f32;
     let mut rotation = 0.0f32;
@@ -236,7 +236,7 @@ fn main() {
 
         ui.window(im_str!("test"))
             .size((300.0, 500.0), ImGuiCond::Appearing)
-            .position((600.0, 140.0), ImGuiCond::Appearing)
+            .position((400.0, 140.0), ImGuiCond::Appearing)
             .build(|| {
                 ui.text(im_str!("A Panel wow!"));
                 ui.separator();
