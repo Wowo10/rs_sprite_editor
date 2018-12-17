@@ -43,6 +43,18 @@ fn rotate_point(start: Point, origin: Point, degrees: f32) -> Point {
     point
 }
 
+fn draw_rectangle_around_active(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, active_rect: Rect, rotation: f32) {
+    let top_left = rotate_point(active_rect.top_left(), active_rect.center(), rotation);
+    let top_right = rotate_point(active_rect.top_right(), active_rect.center(), rotation);
+    let bottom_left = rotate_point(active_rect.bottom_left(), active_rect.center(), rotation);
+    let bottom_right = rotate_point(active_rect.bottom_right(), active_rect.center(), rotation);
+
+    canvas.draw_line(top_left, top_right).unwrap();
+    canvas.draw_line(bottom_left, top_left).unwrap();
+    canvas.draw_line(bottom_right, bottom_left).unwrap();
+    canvas.draw_line(top_right, bottom_right).unwrap();
+}
+
 fn main() {
     let sdl_context = match sdl2::init() {
         Ok(sdl_context) => sdl_context,
@@ -180,17 +192,7 @@ fn main() {
 
         // RED RECT
         canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
-        //canvas.draw_rect(temp_rect).unwrap();
-
-        let top_left = rotate_point(temp_rect.top_left(), temp_rect.center(), rotation);
-        let top_right = rotate_point(temp_rect.top_right(), temp_rect.center(), rotation);
-        let bottom_left = rotate_point(temp_rect.bottom_left(), temp_rect.center(), rotation);
-        let bottom_right = rotate_point(temp_rect.bottom_right(), temp_rect.center(), rotation);
-
-        canvas.draw_line(top_left, top_right).unwrap();
-        canvas.draw_line(bottom_left, top_left).unwrap();
-        canvas.draw_line(bottom_right, bottom_left).unwrap();
-        canvas.draw_line(top_right, bottom_right).unwrap();
+        draw_rectangle_around_active(&mut canvas, temp_rect, rotation);
 
         let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
 
