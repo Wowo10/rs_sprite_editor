@@ -18,7 +18,7 @@ mod fragment;
 use fragment::*;
 
 mod mymath;
-use mymath::check_rect;
+use mymath::check_rect2;
 
 fn rotate_point(start: Point, origin: Point, degrees: f32) -> Point {
     let deg2_rad = 3.14159 / 180.0;
@@ -46,7 +46,7 @@ fn draw_rectangle_around_active(
     canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
     active_rect: Rect,
     rotation: f32,
-) {
+) -> [Point; 4] {
     let top_left = rotate_point(active_rect.top_left(), active_rect.center(), rotation);
     let top_right = rotate_point(active_rect.top_right(), active_rect.center(), rotation);
     let bottom_left = rotate_point(active_rect.bottom_left(), active_rect.center(), rotation);
@@ -56,6 +56,8 @@ fn draw_rectangle_around_active(
     canvas.draw_line(bottom_left, top_left).unwrap();
     canvas.draw_line(bottom_right, bottom_left).unwrap();
     canvas.draw_line(top_right, bottom_right).unwrap();
+
+    [top_left, top_right, bottom_right, bottom_left] //order is very important
 }
 
 fn main() {
@@ -128,7 +130,7 @@ fn main() {
 
     let mut source_rect = Rect::new(0, 0, sprite_tile_size.0, sprite_tile_size.1);
 
-    let mut dest_rect = Rect::new(20, 20, sprite_tile_size.0, sprite_tile_size.1);
+    let mut dest_rect = Rect::new(400, 400, sprite_tile_size.0, sprite_tile_size.1);
 
     let mut scale = 1.0f32;
     let mut rotation = 0.0f32;
@@ -148,10 +150,21 @@ fn main() {
     let mut rotation2 = 0.0f32;
 
     let mut active = &mut dest_rect;
+    let mut array = [
+        Point::new(0, 0),
+        Point::new(0, 0),
+        Point::new(0, 0),
+        Point::new(0, 0),
+    ];
 
     'running: loop {
         use sdl2::event::Event;
         use sdl2::keyboard::Keycode;
+
+        let tempx = if active.x != 0 { active.x } else { 1 } as f32 / scale;
+        let tempy = if active.y != 0 { active.x } else { 1 } as f32 / scale;
+
+        let temp_rect = Rect::new(tempx as i32, tempy as i32, active.width(), active.height());
 
         for event in event_pump.poll_iter() {
             imgui_sdl2.handle_event(&mut imgui, &event);
@@ -166,7 +179,7 @@ fn main() {
                     ..
                 } => break 'running,
                 Event::MouseButtonDown { x, y, which, .. } => {
-                    let check = check_rect(active, Point::new(x, y));
+                    let check = check_rect2(array, Point::new(x, y));
                     println!("which: {}, check: {}", which, check);
                 }
                 _ => {}
@@ -182,11 +195,6 @@ fn main() {
 
         canvas.set_scale(scale, scale).unwrap();
 
-        let tempx = if active.x != 0 { active.x } else { 1 } as f32 / scale;
-        let tempy = if active.y != 0 { active.x } else { 1 } as f32 / scale;
-
-        let temp_rect = Rect::new(tempx as i32, tempy as i32, active.width(), active.height());
-
         canvas
             .copy_ex(
                 &texture,
@@ -200,7 +208,7 @@ fn main() {
 
         // RED RECT - remeber to tace active scale
         canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
-        draw_rectangle_around_active(&mut canvas, temp_rect, rotation);
+        array = draw_rectangle_around_active(&mut canvas, temp_rect, rotation);
 
         canvas.set_scale(scale2, scale2).unwrap();
 
