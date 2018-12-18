@@ -46,11 +46,32 @@ fn draw_rectangle_around_active(
     canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
     active_rect: Rect,
     rotation: f32,
+    scale: f32,
 ) -> [Point; 4] {
+    // let top_left = rotate_point(active_rect.top_left(), active_rect.center(), rotation);
+    // let top_right = rotate_point(active_rect.top_right(), active_rect.center(), rotation);
+    // let bottom_left = rotate_point(active_rect.bottom_left(), active_rect.center(), rotation);
+    // let bottom_right = rotate_point(active_rect.bottom_right(), active_rect.center(), rotation);
+
     let top_left = rotate_point(active_rect.top_left(), active_rect.center(), rotation);
-    let top_right = rotate_point(active_rect.top_right(), active_rect.center(), rotation);
-    let bottom_left = rotate_point(active_rect.bottom_left(), active_rect.center(), rotation);
-    let bottom_right = rotate_point(active_rect.bottom_right(), active_rect.center(), rotation);
+    let top_right = rotate_point(
+        active_rect.top_left() + Point::new((active_rect.width() as f32 * scale) as i32, 0),
+        active_rect.center(),
+        rotation,
+    );
+    let bottom_left = rotate_point(
+        active_rect.top_left() + Point::new(0, (active_rect.height() as f32 * scale) as i32),
+        active_rect.center(),
+        rotation,
+    );
+    let bottom_right = rotate_point(
+        active_rect.top_left() + Point::new(
+            (active_rect.width() as f32 * scale) as i32,
+            (active_rect.height() as f32 * scale) as i32,
+        ),
+        active_rect.center(),
+        rotation,
+    );
 
     canvas.draw_line(top_left, top_right).unwrap();
     canvas.draw_line(bottom_left, top_left).unwrap();
@@ -206,11 +227,13 @@ fn main() {
                 false,
             ).unwrap();
 
-        // RED RECT - remeber to tace active scale
-        canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
-        array = draw_rectangle_around_active(&mut canvas, temp_rect, rotation);
+        
 
         canvas.set_scale(scale2, scale2).unwrap();
+
+        // RED RECT - remeber to tace active scale
+        canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
+        array = draw_rectangle_around_active(&mut canvas, temp_rect, rotation, scale);
 
         let tempx = if dest_rect2.x != 0 { dest_rect2.x } else { 1 } as f32 / scale2;
         let tempy = if dest_rect2.y != 0 { dest_rect2.x } else { 1 } as f32 / scale2;
