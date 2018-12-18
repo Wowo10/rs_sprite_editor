@@ -48,20 +48,20 @@ fn draw_rectangle_around_active(
     rotation: f32,
     scale: f32,
 ) -> [Point; 4] {
-    // let top_left = rotate_point(active_rect.top_left(), active_rect.center(), rotation);
-    // let top_right = rotate_point(active_rect.top_right(), active_rect.center(), rotation);
-    // let bottom_left = rotate_point(active_rect.bottom_left(), active_rect.center(), rotation);
-    // let bottom_right = rotate_point(active_rect.bottom_right(), active_rect.center(), rotation);
+    let temp_center = active_rect.top_left() + Point::new(
+        (active_rect.width() as f32 * scale / 2.0) as i32,
+        (active_rect.height() as f32 * scale / 2.0) as i32,
+    );
 
-    let top_left = rotate_point(active_rect.top_left(), active_rect.center(), rotation);
+    let top_left = rotate_point(active_rect.top_left(), temp_center, rotation);
     let top_right = rotate_point(
         active_rect.top_left() + Point::new((active_rect.width() as f32 * scale) as i32, 0),
-        active_rect.center(),
+        temp_center,
         rotation,
     );
     let bottom_left = rotate_point(
         active_rect.top_left() + Point::new(0, (active_rect.height() as f32 * scale) as i32),
-        active_rect.center(),
+        temp_center,
         rotation,
     );
     let bottom_right = rotate_point(
@@ -69,7 +69,7 @@ fn draw_rectangle_around_active(
             (active_rect.width() as f32 * scale) as i32,
             (active_rect.height() as f32 * scale) as i32,
         ),
-        active_rect.center(),
+        temp_center,
         rotation,
     );
 
@@ -143,7 +143,7 @@ fn main() {
     let mut timer = sdl_context.timer().expect("Could not create timer.");
 
     let texture = texture_creator
-        .load_texture(Path::new("resources/spritesheets/anim.png"))
+        .load_texture(Path::new("resources/spritesheets/animbg.png"))
         .unwrap();
 
     let frames_per_anim = 6;
@@ -151,7 +151,7 @@ fn main() {
 
     let mut source_rect = Rect::new(0, 0, sprite_tile_size.0, sprite_tile_size.1);
 
-    let mut dest_rect = Rect::new(20, 20, sprite_tile_size.0, sprite_tile_size.1);
+    let mut dest_rect = Rect::new(100, 100, sprite_tile_size.0, sprite_tile_size.1);
 
     let mut scale = 1.0f32;
     let mut rotation = 0.0f32;
@@ -167,10 +167,10 @@ fn main() {
 
     let dest_rect2 = Rect::new(100, 20, size.width, size.height);
 
-    let mut scale2 = 1.0f32;
-    let mut rotation2 = 0.0f32;
+    let scale2 = 1.0f32;
+    let rotation2 = 0.0f32;
 
-    let mut active = &mut dest_rect;
+    let active = &mut dest_rect;
     let mut array = [
         Point::new(0, 0),
         Point::new(0, 0),
@@ -199,9 +199,34 @@ fn main() {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => break 'running,
-                Event::MouseButtonDown { x, y, which, .. } => {
+                Event::KeyDown {
+                    keycode: Some(Keycode::Num1),
+                    ..
+                } => {
+                    scale = 1.0;
+                }
+                Event::KeyDown {
+                    keycode: Some(Keycode::Num2),
+                    ..
+                } => {
+                    scale = 2.0;
+                }
+                Event::KeyDown {
+                    keycode: Some(Keycode::Num3),
+                    ..
+                } => {
+                    scale = 3.0;
+                }
+                Event::KeyDown {
+                    keycode: Some(Keycode::Num4),
+                    ..
+                } => {
+                    scale = 4.0;
+                }
+
+                Event::MouseButtonDown { x, y, .. } => {
                     let check = check_rect2(array, Point::new(x, y));
-                    println!("which: {}, check: {}", which, check);
+                    println!("check: {}, (x, y): ({}, {})", check, x, y);
                 }
                 _ => {}
             }
@@ -227,13 +252,11 @@ fn main() {
                 false,
             ).unwrap();
 
-        
-
         canvas.set_scale(scale2, scale2).unwrap();
 
         // RED RECT - remeber to tace active scale
         canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
-        array = draw_rectangle_around_active(&mut canvas, temp_rect, rotation, scale);
+        array = draw_rectangle_around_active(&mut canvas, *active, rotation, scale);
 
         let tempx = if dest_rect2.x != 0 { dest_rect2.x } else { 1 } as f32 / scale2;
         let tempy = if dest_rect2.y != 0 { dest_rect2.x } else { 1 } as f32 / scale2;
