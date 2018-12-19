@@ -18,29 +18,7 @@ mod fragment;
 use fragment::*;
 
 mod mymath;
-use mymath::check_rect2;
-
-fn rotate_point(start: Point, origin: Point, degrees: f32) -> Point {
-    let deg2_rad = 3.14159 / 180.0;
-
-    let radians = degrees * deg2_rad;
-
-    let mut point = start;
-
-    // translate point back to origin:
-    point.x -= origin.x;
-    point.y -= origin.y;
-
-    // rotate point
-    let xnew: i32 = ((point.x as f32 * radians.cos()) - (point.y as f32 * radians.sin())) as i32;
-    let ynew: i32 = ((point.x as f32 * radians.sin()) + (point.y as f32 * radians.cos())) as i32;
-
-    // translate point back:
-    point.x = xnew + origin.x;
-    point.y = ynew + origin.y;
-
-    point
-}
+use mymath::{check_rect2, rotate_point};
 
 fn draw_rectangle_around_active(
     canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
@@ -72,6 +50,8 @@ fn draw_rectangle_around_active(
         temp_center,
         rotation,
     );
+
+    canvas.set_scale(1.0, 1.0).unwrap();
 
     canvas.draw_line(top_left, top_right).unwrap();
     canvas.draw_line(bottom_left, top_left).unwrap();
@@ -151,7 +131,7 @@ fn main() {
 
     let mut source_rect = Rect::new(0, 0, sprite_tile_size.0, sprite_tile_size.1);
 
-    let mut dest_rect = Rect::new(100, 100, sprite_tile_size.0, sprite_tile_size.1);
+    let mut dest_rect = Rect::new(30, 300, sprite_tile_size.0, sprite_tile_size.1);
 
     let mut scale = 1.0f32;
     let mut rotation = 0.0f32;
@@ -163,13 +143,6 @@ fn main() {
 
     let size = texture2.query();
 
-    let source_rect2 = Rect::new(0, 0, size.width, size.height);
-
-    let dest_rect2 = Rect::new(100, 20, size.width, size.height);
-
-    let scale2 = 1.0f32;
-    let rotation2 = 0.0f32;
-
     let active = &mut dest_rect;
     let mut array = [
         Point::new(0, 0),
@@ -178,14 +151,18 @@ fn main() {
         Point::new(0, 0),
     ];
 
-    let fragment = Fragment::new(texture2);
+    let mut fragments: Vec<Fragment> = Vec::new();
+
+    fragments.push(Fragment::new(texture2));
+
+    let mut holding_button = false;
 
     'running: loop {
         use sdl2::event::Event;
         use sdl2::keyboard::Keycode;
 
         let tempx = if active.x != 0 { active.x } else { 1 } as f32 / scale;
-        let tempy = if active.y != 0 { active.x } else { 1 } as f32 / scale;
+        let tempy = if active.y != 0 { active.y } else { 1 } as f32 / scale;
 
         let temp_rect = Rect::new(tempx as i32, tempy as i32, active.width(), active.height());
 
@@ -229,6 +206,22 @@ fn main() {
                 Event::MouseButtonDown { x, y, .. } => {
                     let check = check_rect2(array, Point::new(x, y));
                     println!("check: {}, (x, y): ({}, {})", check, x, y);
+
+                    holding_button = true;
+                }
+
+                Event::MouseButtonUp { .. } => {
+                    holding_button = false;
+                }
+
+                Event::MouseMotion { xrel, yrel, .. } => {
+                    if holding_button {
+                        let current_x = active.x;
+                        let current_y = active.y;
+
+                        active.set_x(current_x + xrel);
+                        active.set_y(current_y + yrel);
+                    }
                 }
                 _ => {}
             }
@@ -254,31 +247,24 @@ fn main() {
                 false,
             ).unwrap();
 
-        canvas.set_scale(scale2, scale2).unwrap();
+        for fragment in &fragments {
+            canvas.set_scale(fragment.scale, fragment.scale).unwrap();
+
+            canvas
+                .copy_ex(
+                    &fragment.texture,
+                    Some(fragment.source_rect),
+                    Some(fragment.draw_position()),
+                    fragment.rotation.into(),
+                    None,
+                    false,
+                    false,
+                ).unwrap();
+        }
 
         // RED RECT - remeber to tace active scale
         canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
         array = draw_rectangle_around_active(&mut canvas, *active, rotation, scale);
-
-        let tempx = if dest_rect2.x != 0 { dest_rect2.x } else { 1 } as f32 / scale2;
-        let tempy = if dest_rect2.y != 0 { dest_rect2.x } else { 1 } as f32 / scale2;
-
-        let temp_rect2 = Rect::new(
-            tempx as i32,
-            tempy as i32,
-            dest_rect2.width(),
-            dest_rect2.height(),
-        );
-        canvas
-            .copy_ex(
-                &fragment.texture,
-                Some(source_rect2),
-                Some(temp_rect2),
-                rotation2.into(),
-                None,
-                false,
-                false,
-            ).unwrap();
 
         let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
 

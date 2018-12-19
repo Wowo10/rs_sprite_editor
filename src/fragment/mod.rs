@@ -1,18 +1,10 @@
-enum ImageType {
-    doodad,
-    spritesheet,
-    album,
-}
-
 pub struct Fragment<'a> {
-    image_type: ImageType,
-
     pub texture: sdl2::render::Texture<'a>,
-    source_rect: sdl2::rect::Rect,
-    position: sdl2::rect::Rect,
+    pub source_rect: sdl2::rect::Rect,
+    pub position: sdl2::rect::Rect,
 
-    scale: f32,
-    rotation: f32,
+    pub scale: f32,
+    pub rotation: f32,
 }
 
 impl<'a> Fragment<'a> {
@@ -21,8 +13,6 @@ impl<'a> Fragment<'a> {
         let heigth = texture.query().height;
 
         Fragment {
-            image_type: ImageType::album,
-
             texture: texture,
             source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),
             position: sdl2::rect::Rect::new(0, 0, width, heigth),
@@ -32,6 +22,11 @@ impl<'a> Fragment<'a> {
         }
     }
 
+    pub fn set_position(&mut self, x: i32, y: i32){
+        self.position.set_x(x);
+        self.position.set_y(y);
+    }
+
     pub fn draw_position(&self) -> sdl2::rect::Rect {
         let tempx = if self.position.x != 0 {
             self.position.x
@@ -39,6 +34,7 @@ impl<'a> Fragment<'a> {
             1
         } as f32
             / self.scale;
+
         let tempy = if self.position.y != 0 {
             self.position.y
         } else {

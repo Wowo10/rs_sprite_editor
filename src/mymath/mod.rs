@@ -90,3 +90,25 @@ pub fn check_rect2(rect: [Point; 4], point: Point) -> bool {
 
     counter % 2 == 1
 }
+
+pub fn rotate_point(start: Point, origin: Point, degrees: f32) -> Point {
+    let deg2_rad = 3.14159 / 180.0;
+
+    let radians = degrees * deg2_rad;
+
+    let mut point = start;
+
+    // translate point back to origin:
+    point.x -= origin.x;
+    point.y -= origin.y;
+
+    // rotate point
+    let xnew: i32 = ((point.x as f32 * radians.cos()) - (point.y as f32 * radians.sin())) as i32;
+    let ynew: i32 = ((point.x as f32 * radians.sin()) + (point.y as f32 * radians.cos())) as i32;
+
+    // translate point back:
+    point.x = xnew + origin.x;
+    point.y = ynew + origin.y;
+
+    point
+}
