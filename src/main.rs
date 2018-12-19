@@ -178,6 +178,8 @@ fn main() {
         Point::new(0, 0),
     ];
 
+    let fragment = Fragment::new(texture2);
+
     'running: loop {
         use sdl2::event::Event;
         use sdl2::keyboard::Keycode;
@@ -269,7 +271,7 @@ fn main() {
         );
         canvas
             .copy_ex(
-                &texture2,
+                &fragment.texture,
                 Some(source_rect2),
                 Some(temp_rect2),
                 rotation2.into(),

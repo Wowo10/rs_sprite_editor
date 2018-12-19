@@ -4,10 +4,10 @@ enum ImageType {
     album,
 }
 
-pub struct Fragment {
+pub struct Fragment<'a> {
     image_type: ImageType,
 
-    texture: sdl2::render::Texture<'static>,
+    pub texture: sdl2::render::Texture<'a>,
     source_rect: sdl2::rect::Rect,
     position: sdl2::rect::Rect,
 
@@ -15,8 +15,8 @@ pub struct Fragment {
     rotation: f32,
 }
 
-impl Fragment {
-    pub fn new(texture: sdl2::render::Texture<'static>) -> Self {
+impl<'a> Fragment<'a> {
+    pub fn new(texture: sdl2::render::Texture<'a>) -> Self {
         let width = texture.query().width;
         let heigth = texture.query().height;
 
