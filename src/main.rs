@@ -141,6 +141,10 @@ fn main() {
         .load_texture(Path::new("resources/doodads/arrow.png"))
         .unwrap();
 
+    let texture3 = texture_creator
+        .load_texture(Path::new("resources/doodads/foo.png"))
+        .unwrap();
+
     let size = texture2.query();
 
     let active = &mut dest_rect;
@@ -154,6 +158,7 @@ fn main() {
     let mut fragments: Vec<Fragment> = Vec::new();
 
     fragments.push(Fragment::new(texture2));
+    fragments.push(Fragment::new(texture3));
 
     let mut holding_button = false;
 
@@ -197,7 +202,7 @@ fn main() {
                     scale = 3.0;
                 }
                 Event::KeyDown {
-                    keycode: Some(Keycode::Num4),
+                    keycode: Some(Keycode::Num4),   
                     ..
                 } => {
                     scale = 4.0;

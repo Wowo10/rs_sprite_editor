@@ -1,4 +1,11 @@
+enum FragmentType{
+    spritesheet,
+    doodad
+}
+
 pub struct Fragment<'a> {
+    fragment_type: FragmentType,
+
     pub texture: sdl2::render::Texture<'a>,
     pub source_rect: sdl2::rect::Rect,
     pub position: sdl2::rect::Rect,
@@ -13,6 +20,8 @@ impl<'a> Fragment<'a> {
         let heigth = texture.query().height;
 
         Fragment {
+            fragment_type: FragmentType::doodad,
+
             texture: texture,
             source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),
             position: sdl2::rect::Rect::new(0, 0, width, heigth),
@@ -20,6 +29,10 @@ impl<'a> Fragment<'a> {
             scale: 1.0,
             rotation: 0.0,
         }
+    }
+
+    pub fn next_step(){
+        //source_rect
     }
 
     pub fn set_position(&mut self, x: i32, y: i32){
