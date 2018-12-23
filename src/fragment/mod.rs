@@ -15,12 +15,29 @@ pub struct Fragment<'a> {
 }
 
 impl<'a> Fragment<'a> {
-    pub fn new(texture: sdl2::render::Texture<'a>) -> Self {
+    pub fn new_doodad(texture: sdl2::render::Texture<'a>, x_pos: i32, y_pos: i32 ) -> Self {
+        
         let width = texture.query().width;
         let heigth = texture.query().height;
 
         Fragment {
             fragment_type: FragmentType::doodad,
+
+            texture: texture,
+            source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),
+            position: sdl2::rect::Rect::new(x_pos, y_pos, width, heigth),
+
+            scale: 1.0,
+            rotation: 0.0,
+        }
+    }
+
+    pub fn new_spritesheet(texture: sdl2::render::Texture<'a>, frame_count: i32) -> Self {
+        let width = texture.query().width;
+        let heigth = texture.query().height;
+
+        Fragment {
+            fragment_type: FragmentType::spritesheet,
 
             texture: texture,
             source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),

@@ -20,16 +20,22 @@ use fragment::*;
 mod mymath;
 use mymath::{check_rect2, rotate_point};
 
+use ui_stuff::timer::Timer;
+
+mod ui_stuff;
+use ui_stuff::*;
+
 fn draw_rectangle_around_active(
     canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
     active_rect: Rect,
     rotation: f32,
     scale: f32,
 ) -> [Point; 4] {
-    let temp_center = active_rect.top_left() + Point::new(
-        (active_rect.width() as f32 * scale / 2.0) as i32,
-        (active_rect.height() as f32 * scale / 2.0) as i32,
-    );
+    let temp_center = active_rect.top_left()
+        + Point::new(
+            (active_rect.width() as f32 * scale / 2.0) as i32,
+            (active_rect.height() as f32 * scale / 2.0) as i32,
+        );
 
     let top_left = rotate_point(active_rect.top_left(), temp_center, rotation);
     let top_right = rotate_point(
@@ -43,10 +49,11 @@ fn draw_rectangle_around_active(
         rotation,
     );
     let bottom_right = rotate_point(
-        active_rect.top_left() + Point::new(
-            (active_rect.width() as f32 * scale) as i32,
-            (active_rect.height() as f32 * scale) as i32,
-        ),
+        active_rect.top_left()
+            + Point::new(
+                (active_rect.width() as f32 * scale) as i32,
+                (active_rect.height() as f32 * scale) as i32,
+            ),
         temp_center,
         rotation,
     );
@@ -133,9 +140,6 @@ fn main() {
 
     let mut dest_rect = Rect::new(30, 300, sprite_tile_size.0, sprite_tile_size.1);
 
-    let mut scale = 1.0f32;
-    let mut rotation = 0.0f32;
-
     /////// another texture
     let texture2 = texture_creator
         .load_texture(Path::new("resources/doodads/arrow.png"))
@@ -144,8 +148,6 @@ fn main() {
     let texture3 = texture_creator
         .load_texture(Path::new("resources/doodads/foo.png"))
         .unwrap();
-
-    let size = texture2.query();
 
     let active = &mut dest_rect;
     let mut array = [
@@ -157,17 +159,21 @@ fn main() {
 
     let mut fragments: Vec<Fragment> = Vec::new();
 
-    fragments.push(Fragment::new(texture2));
-    fragments.push(Fragment::new(texture3));
+    fragments.push(Fragment::new_doodad(texture2, 100, 100));
+    fragments.push(Fragment::new_doodad(texture3, 10, 0));
 
     let mut holding_button = false;
+
+    let mut current_frame = 0;
+
+    let mut main_ui = UserInterface::new();
 
     'running: loop {
         use sdl2::event::Event;
         use sdl2::keyboard::Keycode;
 
-        let tempx = if active.x != 0 { active.x } else { 1 } as f32 / scale;
-        let tempy = if active.y != 0 { active.y } else { 1 } as f32 / scale;
+        let tempx = if active.x != 0 { active.x } else { 1 } as f32 / main_ui.scale;
+        let tempy = if active.y != 0 { active.y } else { 1 } as f32 / main_ui.scale;
 
         let temp_rect = Rect::new(tempx as i32, tempy as i32, active.width(), active.height());
 
@@ -187,25 +193,25 @@ fn main() {
                     keycode: Some(Keycode::Num1),
                     ..
                 } => {
-                    scale = 1.0;
+                    main_ui.scale = 1.0;
                 }
                 Event::KeyDown {
                     keycode: Some(Keycode::Num2),
                     ..
                 } => {
-                    scale = 2.0;
+                    main_ui.scale = 2.0;
                 }
                 Event::KeyDown {
                     keycode: Some(Keycode::Num3),
                     ..
                 } => {
-                    scale = 3.0;
+                    main_ui.scale = 3.0;
                 }
                 Event::KeyDown {
-                    keycode: Some(Keycode::Num4),   
+                    keycode: Some(Keycode::Num4),
                     ..
                 } => {
-                    scale = 4.0;
+                    main_ui.scale = 4.0;
                 }
 
                 Event::MouseButtonDown { x, y, .. } => {
@@ -232,21 +238,25 @@ fn main() {
             }
         }
 
-        let ticks = timer.ticks() as i32;
-
-        source_rect.set_x(sprite_tile_size.0 as i32 * ((ticks / 1000) % frames_per_anim));
+        if main_ui.play {
+            source_rect.set_x(
+                sprite_tile_size.0 as i32
+                    * ((main_ui.frame_timer.get_elapsed() as i32 / main_ui.frame_time)
+                        % frames_per_anim),
+            );
+        }
 
         canvas.set_draw_color(sdl2::pixels::Color::RGB(20, 200, 20));
         canvas.clear();
 
-        canvas.set_scale(scale, scale).unwrap();
+        canvas.set_scale(main_ui.scale, main_ui.scale).unwrap();
 
         canvas
             .copy_ex(
                 &texture,
                 Some(source_rect),
                 Some(temp_rect),
-                rotation.into(),
+                main_ui.rotation.into(),
                 None,
                 false,
                 false,
@@ -269,33 +279,11 @@ fn main() {
 
         // RED RECT - remeber to tace active scale
         canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
-        array = draw_rectangle_around_active(&mut canvas, *active, rotation, scale);
+        array = draw_rectangle_around_active(&mut canvas, *active, main_ui.rotation, main_ui.scale);
 
         let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
 
-        ui.window(im_str!("test"))
-            .size((300.0, 500.0), ImGuiCond::Appearing)
-            .position((400.0, 140.0), ImGuiCond::Appearing)
-            .build(|| {
-                ui.text(im_str!("A Panel wow!"));
-                ui.separator();
-
-                ui.slider_float(im_str!("scale"), &mut scale, 0.5, 6.0)
-                    .build();
-
-                ui.separator();
-
-                ui.slider_float(im_str!("rotation"), &mut rotation, 0.0, 360.0)
-                    .build();
-
-                ui.separator();
-                let mouse_pos = ui.imgui().mouse_pos();
-                ui.text(im_str!(
-                    "Mouse Position: ({:.1},{:.1})",
-                    mouse_pos.0,
-                    mouse_pos.1
-                ));
-            });
+        main_ui.draw_window(&ui);
 
         canvas.window_mut().gl_make_current(&gl_context).unwrap();
         renderer.render(ui);
