@@ -130,7 +130,7 @@ fn main() {
     let texture = texture_creator
         .load_texture(Path::new("resources/spritesheets/animbg.png"))
         .unwrap();
-        
+
     let sprite_tile_size = (52, 76);
 
     let mut source_rect = Rect::new(0, 0, sprite_tile_size.0, sprite_tile_size.1);
@@ -154,14 +154,23 @@ fn main() {
         Point::new(0, 0),
     ];
 
-    let mut fragments: Vec<Fragment> = Vec::new();
+    let mut fragments: Vec<Box<Fragment>> = Vec::new();
 
-    fragments.push(Fragment::new_doodad(texture2, 100, 100));
-    fragments.push(Fragment::new_doodad(texture3, 10, 0));
+    fragments.push(Box::new(Spritesheet::new(&texture, 400, 20, 6)));
+    fragments.push(Box::new(Doodad::new(&texture2, 100, 100, 6)));
+    fragments.push(Box::new(Doodad::new(&texture3, 100, 100, 6)));
+
+    //let mut kek: Vec<&Fragment> = Vec::new();
+
+    //let mut kek = Vec::new();
+
+    // fragments.push(&doodad2);
+    // fragments.push(&doodad);
+
+    //fragments.push(&mut doodad);
+    //fragments.push(&Doodad::new(texture3, 10, 0, 6));
 
     let mut holding_button = false;
-
-    let mut current_frame = 0;
 
     let mut main_ui = UserInterface::new();
 
@@ -257,21 +266,25 @@ fn main() {
                 None,
                 false,
                 false,
-            ).unwrap();
+            )
+            .unwrap();
 
         for fragment in &fragments {
-            canvas.set_scale(fragment.scale, fragment.scale).unwrap();
+            canvas
+                .set_scale(fragment.get_scale(), fragment.get_scale())
+                .unwrap();
 
             canvas
                 .copy_ex(
-                    &fragment.texture,
-                    Some(fragment.source_rect),
+                    &fragment.get_texture(),
+                    Some(fragment.get_source_rect()),
                     Some(fragment.draw_position()),
-                    fragment.rotation.into(),
+                    fragment.get_rotation(),
                     None,
                     false,
                     false,
-                ).unwrap();
+                )
+                .unwrap();
         }
 
         // RED RECT - remeber to tace active scale
