@@ -1,6 +1,7 @@
 pub struct Spritesheet<'a> {
     pub texture: &'a sdl2::render::Texture<'a>,
     pub source_rect: sdl2::rect::Rect,
+    pub frame_width: i32,
     pub position: sdl2::rect::Rect,
 
     pub scale: f32,
@@ -12,13 +13,20 @@ pub struct Spritesheet<'a> {
 }
 
 impl<'a> Spritesheet<'a> {
-    pub fn new(texture: &'a sdl2::render::Texture<'a>, x_pos: i32, y_pos: i32, frame_count: u32) -> Self {
-        let width = texture.query().width;
+    pub fn new(
+        texture: &'a sdl2::render::Texture<'a>,
+        x_pos: i32,
+        y_pos: i32,
+        frame_count: u32,
+    ) -> Self {
+        let width = texture.query().width/frame_count;
         let heigth = texture.query().height;
 
         Spritesheet {
             texture: texture,
             source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),
+            frame_width: width as i32,
+
             position: sdl2::rect::Rect::new(x_pos, y_pos, width, heigth),
 
             scale: 1.0,
@@ -43,7 +51,12 @@ pub struct Doodad<'a> {
 }
 
 impl<'a> Doodad<'a> {
-    pub fn new(texture: &'a sdl2::render::Texture<'a>, x_pos: i32, y_pos: i32, frame_count: u32) -> Self {
+    pub fn new(
+        texture: &'a sdl2::render::Texture<'a>,
+        x_pos: i32,
+        y_pos: i32,
+        frame_count: u32,
+    ) -> Self {
         let width = texture.query().width;
         let heigth = texture.query().height;
 
@@ -81,6 +94,8 @@ pub trait Fragment<'a> {
     fn get_source_rect(&self) -> sdl2::rect::Rect;
     fn get_rotation(&self) -> f64;
     fn get_scale(&self) -> f32;
+
+    fn next_frame(&mut self);
 }
 
 impl<'a> Fragment<'a> for Spritesheet<'a> {
@@ -124,6 +139,16 @@ impl<'a> Fragment<'a> for Spritesheet<'a> {
     fn get_scale(&self) -> f32 {
         self.scale
     }
+
+    fn next_frame(&mut self) {
+        self.current += 1;
+
+        if self.current as u32 >= self.frame_count {
+            self.current = 0;
+        }
+
+        self.source_rect.set_x(self.current as i32 * self.frame_width);
+    }
 }
 
 impl<'a> Fragment<'a> for Doodad<'a> {
@@ -166,6 +191,14 @@ impl<'a> Fragment<'a> for Doodad<'a> {
     }
     fn get_scale(&self) -> f32 {
         self.scale
+    }
+
+    fn next_frame(&mut self) {
+        self.current += 1;
+
+        if self.current >= self.positions.len() {
+            self.current = 0;
+        }
     }
 }
 /*

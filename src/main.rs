@@ -125,19 +125,14 @@ fn main() {
 
     let texture_creator = canvas.texture_creator();
 
-    let mut timer = sdl_context.timer().expect("Could not create timer.");
-
     let texture = texture_creator
         .load_texture(Path::new("resources/spritesheets/animbg.png"))
         .unwrap();
 
     let sprite_tile_size = (52, 76);
-
     let mut source_rect = Rect::new(0, 0, sprite_tile_size.0, sprite_tile_size.1);
-
     let mut dest_rect = Rect::new(30, 300, sprite_tile_size.0, sprite_tile_size.1);
 
-    /////// another texture
     let texture2 = texture_creator
         .load_texture(Path::new("resources/doodads/arrow.png"))
         .unwrap();
@@ -160,19 +155,11 @@ fn main() {
     fragments.push(Box::new(Doodad::new(&texture2, 100, 100, 6)));
     fragments.push(Box::new(Doodad::new(&texture3, 100, 100, 6)));
 
-    //let mut kek: Vec<&Fragment> = Vec::new();
-
-    //let mut kek = Vec::new();
-
-    // fragments.push(&doodad2);
-    // fragments.push(&doodad);
-
-    //fragments.push(&mut doodad);
-    //fragments.push(&Doodad::new(texture3, 10, 0, 6));
-
     let mut holding_button = false;
 
     let mut main_ui = UserInterface::new();
+
+    let mut frame = 0;
 
     'running: loop {
         use sdl2::event::Event;
@@ -244,6 +231,13 @@ fn main() {
             }
         }
 
+        if frame != main_ui.frame() {
+            for x in fragments.iter_mut() {
+                x.next_frame();
+            }
+            frame = main_ui.frame();
+        }
+
         if main_ui.play {
             source_rect.set_x(
                 sprite_tile_size.0 as i32
@@ -287,7 +281,7 @@ fn main() {
                 .unwrap();
         }
 
-        // RED RECT - remeber to tace active scale
+        // RED RECT
         canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
         array = draw_rectangle_around_active(&mut canvas, *active, main_ui.rotation, main_ui.scale);
 

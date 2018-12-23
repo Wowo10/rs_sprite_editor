@@ -10,7 +10,7 @@ pub struct UserInterface {
 
     pub frame_timer: Timer,
     pub frame_time: i32,
-    pub frames_per_anim: i32
+    pub frames_per_anim: i32,
 }
 
 impl UserInterface {
@@ -23,7 +23,7 @@ impl UserInterface {
 
             frame_timer: Timer::create(),
             frame_time: 1000,
-            frames_per_anim: 6
+            frames_per_anim: 6,
         }
     }
 
@@ -63,5 +63,11 @@ impl UserInterface {
                     self.frame_timer.reset();
                 }
             });
+    }
+
+    pub fn frame(&mut self) -> i32 {
+        self.current_frame = (self.frame_timer.get_elapsed() / self.frame_time as u64) as i32 % self.frames_per_anim;
+
+        self.current_frame
     }
 }
