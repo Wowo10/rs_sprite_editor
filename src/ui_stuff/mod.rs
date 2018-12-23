@@ -29,8 +29,8 @@ impl UserInterface {
 
     pub fn draw_window(&mut self, ui: &Ui) {
         ui.window(im_str!("Main Panel"))
-            .size((300.0, 500.0), ImGuiCond::Appearing)
-            .position((400.0, 140.0), ImGuiCond::Appearing)
+            .size((300.0, 500.0), ImGuiCond::Once)
+            .position((400.0, 140.0), ImGuiCond::Once)
             .build(|| {
                 ui.text(im_str!("A Panel wow!"));
                 ui.separator();

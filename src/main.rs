@@ -106,7 +106,8 @@ fn main() {
     gl::load_with(|s| video.gl_get_proc_address(s) as _);
 
     let mut imgui = imgui::ImGui::init();
-    imgui.set_ini_filename(None);
+    imgui.set_ini_filename(Some(imgui::ImString::new("imgui.ini")));
+    imgui.set_log_filename(Some(imgui::ImString::new("imgui.log")));
 
     let mut imgui_sdl2 = ImguiSdl2::new(&mut imgui);
 
