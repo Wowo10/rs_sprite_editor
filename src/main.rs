@@ -12,15 +12,13 @@ use std::path::Path;
 
 use sdl2::image::{LoadTexture, INIT_JPG, INIT_PNG};
 
-use imgui::*;
-
 mod fragment;
 use fragment::*;
 
 mod mymath;
 use mymath::{check_rect2, rotate_point};
 
-use ui_stuff::timer::Timer;
+//use ui_stuff::timer::Timer;
 
 mod ui_stuff;
 use ui_stuff::*;
@@ -132,8 +130,7 @@ fn main() {
     let texture = texture_creator
         .load_texture(Path::new("resources/spritesheets/animbg.png"))
         .unwrap();
-
-    let frames_per_anim = 6;
+        
     let sprite_tile_size = (52, 76);
 
     let mut source_rect = Rect::new(0, 0, sprite_tile_size.0, sprite_tile_size.1);
@@ -242,7 +239,7 @@ fn main() {
             source_rect.set_x(
                 sprite_tile_size.0 as i32
                     * ((main_ui.frame_timer.get_elapsed() as i32 / main_ui.frame_time)
-                        % frames_per_anim),
+                        % main_ui.frames_per_anim),
             );
         }
 

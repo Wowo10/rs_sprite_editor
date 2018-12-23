@@ -22,7 +22,7 @@ impl UserInterface {
             play: false,
 
             frame_timer: Timer::create(),
-            frame_time: 1000
+            frame_time: 1000,
             frames_per_anim: 6
         }
     }

@@ -12,6 +12,8 @@ pub struct Fragment<'a> {
 
     pub scale: f32,
     pub rotation: f32,
+
+    pub frame_count: u32
 }
 
 impl<'a> Fragment<'a> {
@@ -29,10 +31,12 @@ impl<'a> Fragment<'a> {
 
             scale: 1.0,
             rotation: 0.0,
+
+            frame_count: 0
         }
     }
 
-    pub fn new_spritesheet(texture: sdl2::render::Texture<'a>, frame_count: i32) -> Self {
+    pub fn new_spritesheet(texture: sdl2::render::Texture<'a>, frame_count: u32) -> Self {
         let width = texture.query().width;
         let heigth = texture.query().height;
 
@@ -40,11 +44,12 @@ impl<'a> Fragment<'a> {
             fragment_type: FragmentType::spritesheet,
 
             texture: texture,
-            source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),
-            position: sdl2::rect::Rect::new(0, 0, width, heigth),
+            source_rect: sdl2::rect::Rect::new(0, 0, width/frame_count, heigth),
+            position: sdl2::rect::Rect::new(0, 0, width/frame_count, heigth),
 
             scale: 1.0,
             rotation: 0.0,
+            frame_count: frame_count
         }
     }
 
