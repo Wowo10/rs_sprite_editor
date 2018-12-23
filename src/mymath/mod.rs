@@ -112,3 +112,34 @@ pub fn rotate_point(start: Point, origin: Point, degrees: f32) -> Point {
 
     point
 }
+
+pub fn rotate_rectangle(active_rect: sdl2::rect::Rect, rotation: f32, scale: f32) -> [Point; 4] {
+    let temp_center = active_rect.top_left()
+        + Point::new(
+            (active_rect.width() as f32 * scale / 2.0) as i32,
+            (active_rect.height() as f32 * scale / 2.0) as i32,
+        );
+
+    let top_left = rotate_point(active_rect.top_left(), temp_center, rotation);
+    let top_right = rotate_point(
+        active_rect.top_left() + Point::new((active_rect.width() as f32 * scale) as i32, 0),
+        temp_center,
+        rotation,
+    );
+    let bottom_left = rotate_point(
+        active_rect.top_left() + Point::new(0, (active_rect.height() as f32 * scale) as i32),
+        temp_center,
+        rotation,
+    );
+    let bottom_right = rotate_point(
+        active_rect.top_left()
+            + Point::new(
+                (active_rect.width() as f32 * scale) as i32,
+                (active_rect.height() as f32 * scale) as i32,
+            ),
+        temp_center,
+        rotation,
+    );
+
+    [top_left, top_right, bottom_right, bottom_left] //order is very important]
+}

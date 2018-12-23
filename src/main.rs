@@ -16,7 +16,7 @@ mod fragment;
 use fragment::*;
 
 mod mymath;
-use mymath::{check_rect2, rotate_point};
+use mymath::{check_rect2, rotate_rectangle};
 
 //use ui_stuff::timer::Timer;
 
@@ -25,45 +25,14 @@ use ui_stuff::*;
 
 fn draw_rectangle_around_active(
     canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
-    active_rect: Rect,
-    rotation: f32,
-    scale: f32,
-) -> [Point; 4] {
-    let temp_center = active_rect.top_left()
-        + Point::new(
-            (active_rect.width() as f32 * scale / 2.0) as i32,
-            (active_rect.height() as f32 * scale / 2.0) as i32,
-        );
-
-    let top_left = rotate_point(active_rect.top_left(), temp_center, rotation);
-    let top_right = rotate_point(
-        active_rect.top_left() + Point::new((active_rect.width() as f32 * scale) as i32, 0),
-        temp_center,
-        rotation,
-    );
-    let bottom_left = rotate_point(
-        active_rect.top_left() + Point::new(0, (active_rect.height() as f32 * scale) as i32),
-        temp_center,
-        rotation,
-    );
-    let bottom_right = rotate_point(
-        active_rect.top_left()
-            + Point::new(
-                (active_rect.width() as f32 * scale) as i32,
-                (active_rect.height() as f32 * scale) as i32,
-            ),
-        temp_center,
-        rotation,
-    );
-
+    points: [Point; 4],
+) {
     canvas.set_scale(1.0, 1.0).unwrap();
 
-    canvas.draw_line(top_left, top_right).unwrap();
-    canvas.draw_line(bottom_left, top_left).unwrap();
-    canvas.draw_line(bottom_right, bottom_left).unwrap();
-    canvas.draw_line(top_right, bottom_right).unwrap();
-
-    [top_left, top_right, bottom_right, bottom_left] //order is very important
+    canvas.draw_line(points[0], points[1]).unwrap();
+    canvas.draw_line(points[1], points[2]).unwrap();
+    canvas.draw_line(points[2], points[3]).unwrap();
+    canvas.draw_line(points[3], points[0]).unwrap();
 }
 
 fn main() {
@@ -130,10 +99,6 @@ fn main() {
         .load_texture(Path::new("resources/spritesheets/animbg.png"))
         .unwrap();
 
-    let sprite_tile_size = (52, 76);
-    let mut source_rect = Rect::new(0, 0, sprite_tile_size.0, sprite_tile_size.1);
-    let mut dest_rect = Rect::new(30, 300, sprite_tile_size.0, sprite_tile_size.1);
-
     let texture2 = texture_creator
         .load_texture(Path::new("resources/doodads/arrow.png"))
         .unwrap();
@@ -142,19 +107,16 @@ fn main() {
         .load_texture(Path::new("resources/doodads/foo.png"))
         .unwrap();
 
-    let active = &mut dest_rect;
-    let mut array = [
-        Point::new(0, 0),
-        Point::new(0, 0),
-        Point::new(0, 0),
-        Point::new(0, 0),
-    ];
-
     let mut fragments: Vec<Box<Fragment>> = Vec::new();
 
     fragments.push(Box::new(Spritesheet::new(&texture, 400, 20, 6)));
     fragments.push(Box::new(Doodad::new(&texture2, 100, 100, 6)));
     fragments.push(Box::new(Doodad::new(&texture3, 100, 100, 6)));
+
+    let active = &mut fragments[0].draw_position();
+
+    //let active_fragment = &fragments.first();
+    let active_fragment = 0;
 
     let mut holding_button = false;
 
@@ -165,11 +127,6 @@ fn main() {
     'running: loop {
         use sdl2::event::Event;
         use sdl2::keyboard::Keycode;
-
-        let tempx = if active.x != 0 { active.x } else { 1 } as f32 / main_ui.scale;
-        let tempy = if active.y != 0 { active.y } else { 1 } as f32 / main_ui.scale;
-
-        let temp_rect = Rect::new(tempx as i32, tempy as i32, active.width(), active.height());
 
         for event in event_pump.poll_iter() {
             imgui_sdl2.handle_event(&mut imgui, &event);
@@ -209,8 +166,20 @@ fn main() {
                 }
 
                 Event::MouseButtonDown { x, y, .. } => {
-                    let check = check_rect2(array, Point::new(x, y));
-                    println!("check: {}, (x, y): ({}, {})", check, x, y);
+                    println!("(x, y): ({}, {})", x, y);
+
+                    for fragment in &fragments {
+                        let check = check_rect2(
+                            rotate_rectangle(
+                                fragment.draw_position(),
+                                fragment.get_rotation() as f32,
+                                fragment.get_scale(),
+                            ),
+                            Point::new(x, y),
+                        );
+
+                        println!("check {}", check);
+                    }
 
                     holding_button = true;
                 }
@@ -233,36 +202,16 @@ fn main() {
         }
 
         if frame != main_ui.frame() {
-            for x in fragments.iter_mut() {
-                x.next_frame();
+            for fragment in fragments.iter_mut() {
+                fragment.next_frame();
             }
             frame = main_ui.frame();
-        }
-
-        if main_ui.play {
-            source_rect.set_x(
-                sprite_tile_size.0 as i32
-                    * ((main_ui.frame_timer.get_elapsed() as i32 / main_ui.frame_time)
-                        % main_ui.frames_per_anim),
-            );
         }
 
         canvas.set_draw_color(sdl2::pixels::Color::RGB(20, 200, 20));
         canvas.clear();
 
         canvas.set_scale(main_ui.scale, main_ui.scale).unwrap();
-
-        canvas
-            .copy_ex(
-                &texture,
-                Some(source_rect),
-                Some(temp_rect),
-                main_ui.rotation.into(),
-                None,
-                false,
-                false,
-            )
-            .unwrap();
 
         for fragment in &fragments {
             canvas
@@ -284,7 +233,14 @@ fn main() {
 
         // RED RECT
         canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
-        array = draw_rectangle_around_active(&mut canvas, *active, main_ui.rotation, main_ui.scale);
+        draw_rectangle_around_active(
+            &mut canvas,
+            rotate_rectangle(
+                fragments[active_fragment].draw_position(),
+                main_ui.rotation,
+                main_ui.scale,
+            ),
+        );
 
         let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
 
