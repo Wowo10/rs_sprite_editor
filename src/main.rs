@@ -7,7 +7,6 @@ mod lib;
 use lib::*;
 
 use sdl2::rect::Point;
-use sdl2::rect::Rect;
 use std::path::Path;
 
 use sdl2::image::{LoadTexture, INIT_JPG, INIT_PNG};

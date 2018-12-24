@@ -26,12 +26,12 @@ impl Timer {
     }
 }
 
-pub struct Timers {
-    pub updatetimer: Timer,
-}
+// pub struct Timers {
+//     pub updatetimer: Timer,
+// }
 
-pub fn new_timers() -> Timers {
-    Timers {
-        updatetimer: Timer::create(),
-    }
-}
+// pub fn new_timers() -> Timers {
+//     Timers {
+//         updatetimer: Timer::create(),
+//     }
+// }
