@@ -17,8 +17,6 @@ use fragment::*;
 mod mymath;
 use mymath::{check_rect2, rotate_rectangle};
 
-//use ui_stuff::timer::Timer;
-
 mod ui_stuff;
 use ui_stuff::*;
 
@@ -112,10 +110,7 @@ fn main() {
     fragments.push(Box::new(Doodad::new(&texture2, 100, 100, 6)));
     fragments.push(Box::new(Doodad::new(&texture3, 100, 100, 6)));
 
-    let active = &mut fragments[0].draw_position();
-
-    //let active_fragment = &fragments.first();
-    let active_fragment = 0;
+    let mut active_fragment = 0;
 
     let mut holding_button = false;
 
@@ -165,19 +160,20 @@ fn main() {
                 }
 
                 Event::MouseButtonDown { x, y, .. } => {
-                    println!("(x, y): ({}, {})", x, y);
-
-                    for fragment in &fragments {
+                    for i in 0..fragments.len() {
                         let check = check_rect2(
                             rotate_rectangle(
-                                fragment.draw_position(),
-                                fragment.get_rotation() as f32,
-                                fragment.get_scale(),
+                                fragments[i].draw_position(),
+                                fragments[i].get_rotation() as f32,
+                                fragments[i].get_scale(),
                             ),
                             Point::new(x, y),
                         );
 
-                        println!("check {}", check);
+                        if check {
+                            active_fragment = i;
+                            break;
+                        }
                     }
 
                     holding_button = true;
@@ -189,25 +185,25 @@ fn main() {
 
                 Event::MouseMotion { xrel, yrel, .. } => {
                     if holding_button {
-                        let current_x = active.x;
-                        let current_y = active.y;
+                        let current_x = fragments[active_fragment].get_position().x;
+                        let current_y = fragments[active_fragment].get_position().y;
 
-                        active.set_x(current_x + xrel);
-                        active.set_y(current_y + yrel);
+                        fragments[active_fragment].set_position(current_x + xrel, current_y + yrel)
                     }
                 }
                 _ => {}
             }
         }
 
-        if frame != main_ui.frame() {
-            for fragment in fragments.iter_mut() {
+        //TODO: BUG with currentframes / display
+        if main_ui.play && frame != main_ui.frame() {
+            for fragment in &mut fragments {
                 fragment.next_frame();
             }
             frame = main_ui.frame();
         }
 
-        canvas.set_draw_color(sdl2::pixels::Color::RGB(20, 200, 20));
+        canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 200, 200));
         canvas.clear();
 
         canvas.set_scale(main_ui.scale, main_ui.scale).unwrap();

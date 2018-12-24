@@ -25,13 +25,3 @@ impl Timer {
         self.get_elapsed() > duration
     }
 }
-
-// pub struct Timers {
-//     pub updatetimer: Timer,
-// }
-
-// pub fn new_timers() -> Timers {
-//     Timers {
-//         updatetimer: Timer::create(),
-//     }
-// }
