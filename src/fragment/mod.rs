@@ -87,7 +87,10 @@ impl<'a> Doodad<'a> {
 pub trait Fragment<'a> {
     fn set_position(&mut self, x: i32, y: i32);
     fn draw_position(&self) -> sdl2::rect::Rect;
+    fn real_position(&self) -> sdl2::rect::Rect;
     fn change_position(&mut self, diff_x: i32, diff_y: i32);
+    fn set_rotation(&mut self,rotation: f64);
+    fn set_scale(&mut self, scale: f32);
 
     fn get_texture(&self) -> &sdl2::render::Texture;
     fn get_source_rect(&self) -> sdl2::rect::Rect;
@@ -126,9 +129,19 @@ impl<'a> Fragment<'a> for Spritesheet<'a> {
             self.position.height(),
         )
     }
+    fn real_position(&self) -> sdl2::rect::Rect{
+        self.position
+    }
+    
     fn change_position(&mut self, diff_x: i32, diff_y: i32){
         self.position.x += diff_x;
         self.position.y += diff_y;
+    }
+    fn set_rotation(&mut self, rotation: f64){
+        self.rotation = rotation;
+    }
+    fn set_scale(&mut self, scale: f32){
+        self.scale = scale;
     }
 
     fn get_texture(&self) -> &sdl2::render::Texture<'_> {
@@ -186,9 +199,18 @@ impl<'a> Fragment<'a> for Doodad<'a> {
             self.positions[self.current].height(),
         )
     }
+    fn real_position(&self) -> sdl2::rect::Rect {
+        self.positions[self.current]
+    }
     fn change_position(&mut self, diff_x: i32, diff_y: i32){
         self.positions[self.current].x += diff_x;
         self.positions[self.current].y += diff_y;
+    }
+    fn set_rotation(&mut self, rotation: f64){
+        self.rotations[self.current] = rotation;
+    }
+    fn set_scale(&mut self, scale: f32){
+        self.scale = scale;
     }
 
     fn get_texture(&self) -> &sdl2::render::Texture<'_> {

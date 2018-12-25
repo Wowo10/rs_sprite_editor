@@ -11,6 +11,8 @@ pub struct UserInterface {
     pub frame_timer: Timer,
     pub frame_time: i32,
     pub frames_per_anim: i32,
+
+    pub did_change: bool,
 }
 
 impl UserInterface {
@@ -24,6 +26,8 @@ impl UserInterface {
             frame_timer: Timer::create(),
             frame_time: 1000,
             frames_per_anim: 6,
+
+            did_change: false,
         }
     }
 
@@ -32,18 +36,24 @@ impl UserInterface {
             .size((300.0, 500.0), ImGuiCond::Once)
             .position((400.0, 140.0), ImGuiCond::Once)
             .build(|| {
-                ui.text(im_str!("A Panel wow!"));
-                ui.separator();
-
-                ui.slider_float(im_str!("scale"), &mut self.scale, 0.5, 6.0)
-                    .build();
-
-                ui.separator();
-
-                ui.slider_float(im_str!("rotation"), &mut self.rotation, 0.0, 360.0)
-                    .build();
+                if ui
+                    .slider_float(im_str!("scale"), &mut self.scale, 0.5, 6.0)
+                    .build()
+                {
+                    self.did_change = true;
+                }
 
                 ui.separator();
+
+                if ui
+                    .slider_float(im_str!("rotation"), &mut self.rotation, 0.0, 360.0)
+                    .build()
+                {
+                    self.did_change = true;
+                }
+
+                ui.separator();
+                
                 let mouse_pos = ui.imgui().mouse_pos();
                 ui.text(im_str!(
                     "Mouse Position: ({:.1},{:.1})",
@@ -51,23 +61,50 @@ impl UserInterface {
                     mouse_pos.1
                 ));
 
-                ui.slider_int(
-                    im_str!("Frame:"),
-                    &mut self.current_frame,
-                    0,
-                    self.frames_per_anim - 1,
-                )
-                .build();
+                if ui
+                    .slider_int(
+                        im_str!("Frame:"),
+                        &mut self.current_frame,
+                        0,
+                        self.frames_per_anim - 1,
+                    )
+                    .build()
+                {
+                    self.did_change = true;
+                }
 
                 if ui.checkbox(im_str!("play"), &mut self.play) {
                     self.frame_timer.reset();
+                    self.current_frame = 0;
                 }
             });
     }
 
     pub fn frame(&mut self) -> i32 {
-        self.current_frame = (self.frame_timer.get_elapsed() / self.frame_time as u64) as i32 % self.frames_per_anim;
+        self.current_frame =
+            (self.frame_timer.get_elapsed() / self.frame_time as u64) as i32 % self.frames_per_anim;
 
         self.current_frame
+    }
+
+    pub fn change_settings(&mut self, scale: f32, rotation: f32) {
+        self.scale = scale;
+        self.rotation = rotation;
+    }
+
+    pub fn updatet_check(&mut self) -> bool {
+        if self.did_change {
+            self.did_change = false;
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn get_rotation(&self) -> f32 {
+        self.rotation
+    }
+    pub fn get_scale(&self) -> f32 {
+        self.scale
     }
 }

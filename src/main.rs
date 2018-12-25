@@ -6,6 +6,7 @@ extern crate sdl2;
 mod lib;
 use lib::*;
 
+use sdl2::pixels::Color;
 use sdl2::rect::Point;
 use std::path::Path;
 
@@ -24,6 +25,7 @@ fn draw_rectangle_around_active(
     canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
     points: [Point; 4],
 ) {
+    canvas.set_draw_color(Color::RGB(200, 20, 20));
     canvas.set_scale(1.0, 1.0).unwrap();
 
     canvas.draw_line(points[0], points[1]).unwrap();
@@ -139,31 +141,36 @@ fn main() {
                     ..
                 } => {
                     main_ui.scale = 1.0;
+                    main_ui.did_change = true;
                 }
                 Event::KeyDown {
                     keycode: Some(Keycode::Num2),
                     ..
                 } => {
                     main_ui.scale = 2.0;
+                    main_ui.did_change = true;
                 }
                 Event::KeyDown {
                     keycode: Some(Keycode::Num3),
                     ..
                 } => {
                     main_ui.scale = 3.0;
+                    main_ui.did_change = true;
                 }
                 Event::KeyDown {
                     keycode: Some(Keycode::Num4),
                     ..
                 } => {
                     main_ui.scale = 4.0;
+                    main_ui.did_change = true;
                 }
-
                 Event::MouseButtonDown { x, y, .. } => {
                     for i in 0..fragments.len() {
+                        //TODO: Add Checking if pixel is not (0,0,0,1)
+                        //poor pixel perfect
                         let check = check_rect2(
                             rotate_rectangle(
-                                fragments[i].draw_position(),
+                                fragments[i].real_position(),
                                 fragments[i].get_rotation() as f32,
                                 fragments[i].get_scale(),
                             ),
@@ -172,6 +179,10 @@ fn main() {
 
                         if check {
                             active_fragment = i;
+                            main_ui.change_settings(
+                                fragments[i].get_scale(),
+                                fragments[i].get_rotation() as f32,
+                            );
                             break;
                         }
                     }
@@ -194,8 +205,13 @@ fn main() {
                 _ => {}
             }
         }
+        if main_ui.updatet_check() {
+            fragments[active_fragment].set_rotation(main_ui.get_rotation().into());
+            fragments[active_fragment].set_scale(main_ui.get_scale());
+        }
 
         //TODO: BUG with currentframes / display
+        //due to only nextframe() and reset()
         if main_ui.play && frame != main_ui.frame() {
             for fragment in &mut fragments {
                 fragment.next_frame();
@@ -203,7 +219,7 @@ fn main() {
             frame = main_ui.frame();
         }
 
-        canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 200, 200));
+        canvas.set_draw_color(Color::RGB(100, 100, 100));
         canvas.clear();
 
         canvas.set_scale(main_ui.scale, main_ui.scale).unwrap();
@@ -226,12 +242,10 @@ fn main() {
                 .unwrap();
         }
 
-        // RED RECT
-        canvas.set_draw_color(sdl2::pixels::Color::RGB(200, 20, 20));
         draw_rectangle_around_active(
             &mut canvas,
             rotate_rectangle(
-                fragments[active_fragment].draw_position(),
+                fragments[active_fragment].real_position(),
                 main_ui.rotation,
                 main_ui.scale,
             ),
