@@ -1,15 +1,15 @@
 pub struct Spritesheet<'a> {
-    pub texture: &'a sdl2::render::Texture<'a>,
-    pub source_rect: sdl2::rect::Rect,
-    pub frame_width: i32,
-    pub position: sdl2::rect::Rect,
+    texture: &'a sdl2::render::Texture<'a>,
+    source_rect: sdl2::rect::Rect,
+    frame_width: i32,
+    position: sdl2::rect::Rect,
 
-    pub scale: f32,
-    pub rotation: f64,
+    scale: f32,
+    rotation: f64,
 
-    pub frame_count: u32,
+    frame_count: u32,
 
-    pub current: usize,
+    current: usize,
 }
 
 impl<'a> Spritesheet<'a> {
@@ -19,7 +19,7 @@ impl<'a> Spritesheet<'a> {
         y_pos: i32,
         frame_count: u32,
     ) -> Self {
-        let width = texture.query().width/frame_count;
+        let width = texture.query().width / frame_count;
         let heigth = texture.query().height;
 
         Spritesheet {
@@ -40,14 +40,14 @@ impl<'a> Spritesheet<'a> {
 }
 
 pub struct Doodad<'a> {
-    pub texture: &'a sdl2::render::Texture<'a>,
-    pub source_rect: sdl2::rect::Rect,
-    pub positions: Vec<sdl2::rect::Rect>,
+    texture: &'a sdl2::render::Texture<'a>,
+    source_rect: sdl2::rect::Rect,
+    positions: Vec<sdl2::rect::Rect>,
 
-    pub scale: f32,
-    pub rotations: Vec<f64>,
+    scale: f32,
+    rotations: Vec<f64>,
 
-    pub current: usize,
+    current: usize,
 }
 
 impl<'a> Doodad<'a> {
@@ -89,7 +89,7 @@ pub trait Fragment<'a> {
     fn draw_position(&self) -> sdl2::rect::Rect;
     fn real_position(&self) -> sdl2::rect::Rect;
     fn change_position(&mut self, diff_x: i32, diff_y: i32);
-    fn set_rotation(&mut self,rotation: f64);
+    fn set_rotation(&mut self, rotation: f64);
     fn set_scale(&mut self, scale: f32);
 
     fn get_texture(&self) -> &sdl2::render::Texture;
@@ -130,18 +130,18 @@ impl<'a> Fragment<'a> for Spritesheet<'a> {
             self.position.height(),
         )
     }
-    fn real_position(&self) -> sdl2::rect::Rect{
+    fn real_position(&self) -> sdl2::rect::Rect {
         self.position
     }
-    
-    fn change_position(&mut self, diff_x: i32, diff_y: i32){
+
+    fn change_position(&mut self, diff_x: i32, diff_y: i32) {
         self.position.x += diff_x;
         self.position.y += diff_y;
     }
-    fn set_rotation(&mut self, rotation: f64){
+    fn set_rotation(&mut self, rotation: f64) {
         self.rotation = rotation;
     }
-    fn set_scale(&mut self, scale: f32){
+    fn set_scale(&mut self, scale: f32) {
         self.scale = scale;
     }
 
@@ -157,7 +157,7 @@ impl<'a> Fragment<'a> for Spritesheet<'a> {
     fn get_scale(&self) -> f32 {
         self.scale
     }
-    fn get_position(&self) -> sdl2::rect::Rect{
+    fn get_position(&self) -> sdl2::rect::Rect {
         self.position
     }
 
@@ -169,10 +169,11 @@ impl<'a> Fragment<'a> for Spritesheet<'a> {
             self.current = 0;
         }
 
-        self.source_rect.set_x(self.current as i32 * self.frame_width);
+        self.source_rect
+            .set_x(self.current as i32 * self.frame_width);
     }
 
-    fn reset_frames(&mut self){
+    fn reset_frames(&mut self) {
         self.current = 0;
         self.source_rect.set_x(0);
     }
@@ -209,14 +210,14 @@ impl<'a> Fragment<'a> for Doodad<'a> {
     fn real_position(&self) -> sdl2::rect::Rect {
         self.positions[self.current]
     }
-    fn change_position(&mut self, diff_x: i32, diff_y: i32){
+    fn change_position(&mut self, diff_x: i32, diff_y: i32) {
         self.positions[self.current].x += diff_x;
         self.positions[self.current].y += diff_y;
     }
-    fn set_rotation(&mut self, rotation: f64){
+    fn set_rotation(&mut self, rotation: f64) {
         self.rotations[self.current] = rotation;
     }
-    fn set_scale(&mut self, scale: f32){
+    fn set_scale(&mut self, scale: f32) {
         self.scale = scale;
     }
 
@@ -232,7 +233,7 @@ impl<'a> Fragment<'a> for Doodad<'a> {
     fn get_scale(&self) -> f32 {
         self.scale
     }
-    fn get_position(&self) -> sdl2::rect::Rect{
+    fn get_position(&self) -> sdl2::rect::Rect {
         self.positions[self.current]
     }
 
@@ -244,7 +245,7 @@ impl<'a> Fragment<'a> for Doodad<'a> {
         }
     }
 
-    fn reset_frames(&mut self){
+    fn reset_frames(&mut self) {
         self.current = 0;
     }
 }
