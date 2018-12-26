@@ -13,6 +13,7 @@ pub struct UserInterface {
     pub frames_per_anim: i32,
 
     pub did_change: bool,
+    pub did_change_play: bool,
 }
 
 impl UserInterface {
@@ -28,6 +29,7 @@ impl UserInterface {
             frames_per_anim: 6,
 
             did_change: false,
+            did_change_play: false,
         }
     }
 
@@ -53,7 +55,7 @@ impl UserInterface {
                 }
 
                 ui.separator();
-                
+
                 let mouse_pos = ui.imgui().mouse_pos();
                 ui.text(im_str!(
                     "Mouse Position: ({:.1},{:.1})",
@@ -76,6 +78,7 @@ impl UserInterface {
                 if ui.checkbox(im_str!("play"), &mut self.play) {
                     self.frame_timer.reset();
                     self.current_frame = 0;
+                    self.did_change_play = true;
                 }
             });
     }
@@ -92,13 +95,18 @@ impl UserInterface {
         self.rotation = rotation;
     }
 
-    pub fn updatet_check(&mut self) -> bool {
+    pub fn update_check(&mut self) -> (bool, bool) {
+        let did_change: (bool, bool) = (self.did_change, self.did_change_play);
+
         if self.did_change {
             self.did_change = false;
-            true
-        } else {
-            false
         }
+
+        if self.did_change_play {
+            self.did_change_play = false;
+        }
+
+        did_change
     }
 
     pub fn get_rotation(&self) -> f32 {

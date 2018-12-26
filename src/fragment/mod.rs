@@ -99,6 +99,7 @@ pub trait Fragment<'a> {
     fn get_position(&self) -> sdl2::rect::Rect;
 
     fn next_frame(&mut self);
+    fn reset_frames(&mut self);
 }
 
 impl<'a> Fragment<'a> for Spritesheet<'a> {
@@ -161,6 +162,7 @@ impl<'a> Fragment<'a> for Spritesheet<'a> {
     }
 
     fn next_frame(&mut self) {
+        println!("next: {}", self.current);
         self.current += 1;
 
         if self.current as u32 >= self.frame_count {
@@ -168,6 +170,11 @@ impl<'a> Fragment<'a> for Spritesheet<'a> {
         }
 
         self.source_rect.set_x(self.current as i32 * self.frame_width);
+    }
+
+    fn reset_frames(&mut self){
+        self.current = 0;
+        self.source_rect.set_x(0);
     }
 }
 
@@ -235,5 +242,9 @@ impl<'a> Fragment<'a> for Doodad<'a> {
         if self.current >= self.positions.len() {
             self.current = 0;
         }
+    }
+
+    fn reset_frames(&mut self){
+        self.current = 0;
     }
 }
