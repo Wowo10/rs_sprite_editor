@@ -38,6 +38,29 @@ impl<'a> Spritesheet<'a> {
         }
     }
 
+    pub fn _load(
+        texture: &'a sdl2::render::Texture<'a>,
+        frame_count: usize,
+    ) -> Self {
+        let width = texture.query().width;
+        let heigth = texture.query().height;
+
+        Spritesheet {
+            texture: texture,
+            source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),
+            frame_width: width as i32,
+
+            position: sdl2::rect::Rect::new(0, 0, width, heigth),
+
+            scale: 1.0,
+            rotation: 0.0,
+
+            frame_count: frame_count,
+
+            current: 0,
+        }
+    }
+
     fn update_frame(&mut self) {
         self.source_rect
             .set_x(self.current as i32 * self.frame_width);
@@ -75,6 +98,26 @@ impl<'a> Doodad<'a> {
         for _ in 0..frame_count {
             rotations.push(0.0);
         }
+
+        Doodad {
+            texture: texture,
+            source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),
+            positions: positions,
+
+            scale: 1.0,
+            rotations: rotations,
+
+            current: 0,
+        }
+    }
+
+    pub fn _load(
+        texture: &'a sdl2::render::Texture<'a>,
+        positions: Vec<sdl2::rect::Rect>,
+        rotations: Vec<f64>,
+    ) -> Self {
+        let width = texture.query().width;
+        let heigth = texture.query().height;
 
         Doodad {
             texture: texture,
