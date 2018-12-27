@@ -7,7 +7,7 @@ pub struct Spritesheet<'a> {
     scale: f32,
     rotation: f64,
 
-    frame_count: u32,
+    frame_count: usize,
 
     current: usize,
 }
@@ -17,9 +17,9 @@ impl<'a> Spritesheet<'a> {
         texture: &'a sdl2::render::Texture<'a>,
         x_pos: i32,
         y_pos: i32,
-        frame_count: u32,
+        frame_count: usize,
     ) -> Self {
-        let width = texture.query().width / frame_count;
+        let width = texture.query().width / frame_count as u32;
         let heigth = texture.query().height;
 
         Spritesheet {
@@ -36,6 +36,11 @@ impl<'a> Spritesheet<'a> {
 
             current: 0,
         }
+    }
+
+    fn update_frame(&mut self) {
+        self.source_rect
+            .set_x(self.current as i32 * self.frame_width);
     }
 }
 
@@ -98,6 +103,7 @@ pub trait Fragment<'a> {
     fn get_scale(&self) -> f32;
     fn get_position(&self) -> sdl2::rect::Rect;
 
+    fn set_frame(&mut self, frame_number: usize);
     fn next_frame(&mut self);
     fn reset_frames(&mut self);
 }
@@ -161,21 +167,18 @@ impl<'a> Fragment<'a> for Spritesheet<'a> {
         self.position
     }
 
+    fn set_frame(&mut self, frame_number: usize) {
+        self.current = frame_number % self.frame_count;
+        self.update_frame();
+    }
     fn next_frame(&mut self) {
-        println!("next: {}", self.current);
-        self.current += 1;
-
-        if self.current as u32 >= self.frame_count {
-            self.current = 0;
-        }
-
-        self.source_rect
-            .set_x(self.current as i32 * self.frame_width);
+        self.current = (self.current + 1) % self.frame_count;
+        self.update_frame();
     }
 
     fn reset_frames(&mut self) {
         self.current = 0;
-        self.source_rect.set_x(0);
+        self.update_frame();
     }
 }
 
@@ -237,12 +240,11 @@ impl<'a> Fragment<'a> for Doodad<'a> {
         self.positions[self.current]
     }
 
+    fn set_frame(&mut self, frame_number: usize) {
+        self.current = frame_number % self.positions.len();
+    }
     fn next_frame(&mut self) {
-        self.current += 1;
-
-        if self.current >= self.positions.len() {
-            self.current = 0;
-        }
+        self.current = (self.current + 1) % self.positions.len();
     }
 
     fn reset_frames(&mut self) {

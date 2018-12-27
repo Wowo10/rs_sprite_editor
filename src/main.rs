@@ -211,16 +211,20 @@ fn main() {
         if check.0 {
             fragments[active_fragment].set_rotation(main_ui.get_rotation().into());
             fragments[active_fragment].set_scale(main_ui.get_scale());
+
+            let frame = main_ui.get_frame();
+
+            for fragment in &mut fragments {
+                fragment.set_frame(frame);
+            }
         }
 
         if check.1 {
-            for fragment in &mut fragments{
+            for fragment in &mut fragments {
                 fragment.reset_frames();
             }
         }
 
-        //TODO: BUG with currentframes / display
-        //due to only nextframe() and reset()
         if main_ui.play && frame != main_ui.frame() {
             for fragment in &mut fragments {
                 fragment.next_frame();

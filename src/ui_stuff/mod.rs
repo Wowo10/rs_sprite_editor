@@ -115,4 +115,7 @@ impl UserInterface {
     pub fn get_scale(&self) -> f32 {
         self.scale
     }
+    pub fn get_frame(&self) -> usize {
+        self.current_frame as usize
+    }
 }
