@@ -2,23 +2,30 @@ use imgui::*;
 pub mod timer;
 use self::timer::*;
 
-pub struct UserInterface {
-    pub scale: f32,
-    pub rotation: f32,
-    pub current_frame: i32,
-    pub play: bool,
+pub mod main_menu;
+pub use self::main_menu::MainMenuInterface;
 
-    pub frame_timer: Timer,
-    pub frame_time: i32,
-    pub frames_per_anim: i32,
-
-    pub did_change: bool,
-    pub did_change_play: bool,
+pub trait UserInterface {
+    fn draw_window(&mut self, ui: &Ui);
 }
 
-impl UserInterface {
+pub struct MainInterface {
+    pub scale: f32,
+    rotation: f32,
+    current_frame: i32,
+    play: bool,
+
+    frame_timer: Timer,
+    frame_time: i32,
+    frames_per_anim: i32,
+
+    pub did_change: bool,
+    did_change_play: bool,
+}
+
+impl MainInterface {
     pub fn new() -> Self {
-        UserInterface {
+        MainInterface {
             scale: 1.0,
             rotation: 0.0,
             current_frame: 0,
@@ -33,7 +40,48 @@ impl UserInterface {
         }
     }
 
-    pub fn draw_window(&mut self, ui: &Ui) {
+    pub fn frame(&mut self) -> i32 {
+        self.current_frame =
+            (self.frame_timer.get_elapsed() / self.frame_time as u64) as i32 % self.frames_per_anim;
+
+        self.current_frame
+    }
+
+    pub fn change_settings(&mut self, scale: f32, rotation: f32) {
+        self.scale = scale;
+        self.rotation = rotation;
+    }
+
+    pub fn update_check(&mut self) -> (bool, bool) {
+        let did_change: (bool, bool) = (self.did_change, self.did_change_play);
+
+        if self.did_change {
+            self.did_change = false;
+        }
+
+        if self.did_change_play {
+            self.did_change_play = false;
+        }
+
+        did_change
+    }
+
+    pub fn get_rotation(&self) -> f32 {
+        self.rotation
+    }
+    pub fn get_scale(&self) -> f32 {
+        self.scale
+    }
+    pub fn get_frame(&self) -> usize {
+        self.current_frame as usize
+    }
+    pub fn play(&self) -> bool {
+        self.play
+    }
+}
+
+impl UserInterface for MainInterface {
+    fn draw_window(&mut self, ui: &Ui) {
         ui.window(im_str!("Main Panel"))
             .size((300.0, 500.0), ImGuiCond::Once)
             .position((400.0, 140.0), ImGuiCond::Once)
@@ -81,41 +129,5 @@ impl UserInterface {
                     self.did_change_play = true;
                 }
             });
-    }
-
-    pub fn frame(&mut self) -> i32 {
-        self.current_frame =
-            (self.frame_timer.get_elapsed() / self.frame_time as u64) as i32 % self.frames_per_anim;
-
-        self.current_frame
-    }
-
-    pub fn change_settings(&mut self, scale: f32, rotation: f32) {
-        self.scale = scale;
-        self.rotation = rotation;
-    }
-
-    pub fn update_check(&mut self) -> (bool, bool) {
-        let did_change: (bool, bool) = (self.did_change, self.did_change_play);
-
-        if self.did_change {
-            self.did_change = false;
-        }
-
-        if self.did_change_play {
-            self.did_change_play = false;
-        }
-
-        did_change
-    }
-
-    pub fn get_rotation(&self) -> f32 {
-        self.rotation
-    }
-    pub fn get_scale(&self) -> f32 {
-        self.scale
-    }
-    pub fn get_frame(&self) -> usize {
-        self.current_frame as usize
     }
 }

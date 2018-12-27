@@ -19,7 +19,7 @@ mod mymath;
 use mymath::{check_rect2, rotate_rectangle};
 
 mod ui_stuff;
-use ui_stuff::UserInterface;
+use ui_stuff::*;
 
 mod config;
 use config::Config;
@@ -126,11 +126,12 @@ fn main() {
 
     let mut holding_button = false;
 
-    let mut main_ui = UserInterface::new();
+    let mut main_ui = MainInterface::new();
+    let mut main_menu_ui = ui_stuff::MainMenuInterface::new();
 
     let mut frame = 0;
 
-    'running: loop {
+    while !main_menu_ui.exit {
         use sdl2::event::Event;
         use sdl2::keyboard::Keycode;
 
@@ -145,7 +146,7 @@ fn main() {
                 | Event::KeyDown {
                     keycode: Some(Keycode::Escape),
                     ..
-                } => break 'running,
+                } => main_menu_ui.exit = true,
                 Event::KeyDown {
                     keycode: Some(Keycode::Num1),
                     ..
@@ -235,7 +236,7 @@ fn main() {
             }
         }
 
-        if main_ui.play && frame != main_ui.frame() {
+        if main_ui.play() && frame != main_ui.frame() {
             for fragment in &mut fragments {
                 fragment.next_frame();
             }
@@ -245,7 +246,9 @@ fn main() {
         canvas.set_draw_color(backgound_color);
         canvas.clear();
 
-        canvas.set_scale(main_ui.scale, main_ui.scale).unwrap();
+        canvas
+            .set_scale(main_ui.get_scale(), main_ui.get_scale())
+            .unwrap();
 
         for fragment in &fragments {
             canvas
@@ -269,14 +272,15 @@ fn main() {
             &mut canvas,
             rotate_rectangle(
                 fragments[active_fragment].real_position(),
-                main_ui.rotation,
-                main_ui.scale,
+                main_ui.get_rotation(),
+                main_ui.get_scale(),
             ),
         );
 
         let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
 
         main_ui.draw_window(&ui);
+        main_menu_ui.draw_window(&ui);
 
         canvas.window_mut().gl_make_current(&gl_context).unwrap();
         renderer.render(ui);
