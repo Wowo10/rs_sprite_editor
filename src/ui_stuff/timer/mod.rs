@@ -21,7 +21,7 @@ impl Timer {
         (duration.as_secs() * 1000) + duration.subsec_millis() as u64
     }
 
-    pub fn did_pass(&self, duration: u64) -> bool {
+    pub fn _did_pass(&self, duration: u64) -> bool { //TODO: Use This
         self.get_elapsed() > duration
     }
 }
