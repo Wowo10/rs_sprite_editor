@@ -19,7 +19,10 @@ mod mymath;
 use mymath::{check_rect2, rotate_rectangle};
 
 mod ui_stuff;
-use ui_stuff::*;
+use ui_stuff::UserInterface;
+
+mod config;
+use config::Config;
 
 fn draw_rectangle_around_active(
     canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
@@ -35,6 +38,13 @@ fn draw_rectangle_around_active(
 }
 
 fn main() {
+    let mut config = Config::create("./usr/config.csv");
+
+    let width: u32 = config.read("width").parse::<u32>().unwrap();
+    let height: u32 = config.read("height").parse::<u32>().unwrap();
+
+    let backgound_color = config.read_color("background_color");
+
     let sdl_context = match sdl2::init() {
         Ok(sdl_context) => sdl_context,
         Err(err) => panic!("SDL could not initialize!  SDL_Error: {}", err),
@@ -54,7 +64,7 @@ fn main() {
     }
 
     let window = match video
-        .window("rust-imgui-sdl2 demo", 1000, 700)
+        .window("rust-imgui-sdl2 demo", width, height)
         .position_centered()
         .resizable()
         .opengl()
@@ -232,7 +242,7 @@ fn main() {
             frame = main_ui.frame();
         }
 
-        canvas.set_draw_color(Color::RGB(100, 100, 100));
+        canvas.set_draw_color(backgound_color);
         canvas.clear();
 
         canvas.set_scale(main_ui.scale, main_ui.scale).unwrap();
