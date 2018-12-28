@@ -40,8 +40,8 @@ fn draw_rectangle_around_active(
 fn main() {
     let mut config = Config::create("./usr/config.csv");
 
-    let width: u32 = config.read("width").parse::<u32>().unwrap();
-    let height: u32 = config.read("height").parse::<u32>().unwrap();
+    let width = config.read("width").parse::<u32>().unwrap();
+    let height = config.read("height").parse::<u32>().unwrap();
 
     let backgound_color = config.read_color("background_color");
 
@@ -89,7 +89,7 @@ fn main() {
 
     let mut imgui_sdl2 = ImguiSdl2::new(&mut imgui);
 
-    let renderer =
+    let imgui_renderer =
         imgui_opengl_renderer::Renderer::new(&mut imgui, |s| video.gl_get_proc_address(s) as _);
 
     let mut event_pump = match sdl_context.event_pump() {
@@ -116,15 +116,17 @@ fn main() {
         .load_texture(Path::new("resources/doodads/foo.png"))
         .unwrap();
 
-    let mut fragments: Vec<Box<Fragment>> = Vec::new();
+    let mut spritesheet = Spritesheet::new(&texture, 400, 20, 6);
 
-    fragments.push(Box::new(Spritesheet::new(&texture, 400, 20, 6)));
-    fragments.push(Box::new(Doodad::new(&texture2, 100, 100, 6)));
-    fragments.push(Box::new(Doodad::new(&texture3, 100, 100, 6)));
+    let mut doodads: Vec<Doodad> = Vec::new();
+
+    doodads.push(Doodad::new(&texture2, 100, 100, 6));
+    doodads.push(Doodad::new(&texture3, 100, 100, 6));
 
     let mut active_fragment = 0;
 
     let mut holding_button = false;
+    let mut holding_index: i32 = -1;
 
     let mut main_ui = MainInterface::new();
     let mut main_menu_ui = ui_stuff::MainMenuInterface::new();
@@ -176,14 +178,14 @@ fn main() {
                     main_ui.did_change = true;
                 }
                 Event::MouseButtonDown { x, y, .. } => {
-                    for i in 0..fragments.len() {
+                    for i in 0..doodads.len() {
                         //TODO: Add Checking if pixel is not (0,0,0,1)
                         //poor pixel perfect
                         let check = check_rect2(
                             rotate_rectangle(
-                                fragments[i].real_position(),
-                                fragments[i].get_rotation() as f32,
-                                fragments[i].get_scale(),
+                                doodads[i].real_position(),
+                                doodads[i].get_rotation() as f32,
+                                doodads[i].get_scale(),
                             ),
                             Point::new(x, y),
                         );
@@ -191,9 +193,10 @@ fn main() {
                         if check {
                             active_fragment = i;
                             main_ui.change_settings(
-                                fragments[i].get_scale(),
-                                fragments[i].get_rotation() as f32,
+                                doodads[i].get_scale(),
+                                doodads[i].get_rotation() as f32,
                             );
+                            holding_index = i as i32;
                             break;
                         }
                     }
@@ -203,14 +206,19 @@ fn main() {
 
                 Event::MouseButtonUp { .. } => {
                     holding_button = false;
+                    holding_index = -1;
                 }
 
                 Event::MouseMotion { xrel, yrel, .. } => {
                     if holding_button {
-                        let current_x = fragments[active_fragment].get_position().x;
-                        let current_y = fragments[active_fragment].get_position().y;
-
-                        fragments[active_fragment].set_position(current_x + xrel, current_y + yrel)
+                        if holding_index != -1 {
+                            doodads[holding_index as usize].change_position(xrel, yrel);
+                        } else {
+                            spritesheet.change_position(xrel, yrel);
+                            for doodad in &mut doodads {
+                                doodad.change_position(xrel, yrel);
+                            }
+                        }
                     }
                 }
                 _ => {}
@@ -220,37 +228,52 @@ fn main() {
         let check = main_ui.update_check();
 
         if check.0 {
-            fragments[active_fragment].set_rotation(main_ui.get_rotation().into());
-            fragments[active_fragment].set_scale(main_ui.get_scale());
+            doodads[active_fragment].set_rotation(main_ui.get_rotation().into());
+            doodads[active_fragment].set_scale(main_ui.get_scale());
 
             let frame = main_ui.get_frame();
 
-            for fragment in &mut fragments {
+            for fragment in &mut doodads {
                 fragment.set_frame(frame);
             }
+            spritesheet.set_frame(frame);
         }
 
         if check.1 {
-            for fragment in &mut fragments {
+            for fragment in &mut doodads {
                 fragment.reset_frames();
             }
+            spritesheet.reset_frames();
         }
 
         if main_ui.play() && frame != main_ui.frame() {
-            for fragment in &mut fragments {
+            for fragment in &mut doodads {
                 fragment.next_frame();
             }
+            spritesheet.next_frame();
             frame = main_ui.frame();
         }
 
         canvas.set_draw_color(backgound_color);
-        canvas.clear();
+        canvas.clear();        
 
         canvas
-            .set_scale(main_ui.get_scale(), main_ui.get_scale())
+            .set_scale(spritesheet.get_scale(), spritesheet.get_scale())
             .unwrap();
 
-        for fragment in &fragments {
+        canvas
+            .copy_ex(
+                &spritesheet.get_texture(),
+                Some(spritesheet.get_source_rect()),
+                Some(spritesheet.draw_position()),
+                spritesheet.get_rotation(),
+                None,
+                false,
+                false,
+            )
+            .unwrap();
+
+        for fragment in &doodads {
             canvas
                 .set_scale(fragment.get_scale(), fragment.get_scale())
                 .unwrap();
@@ -271,7 +294,7 @@ fn main() {
         draw_rectangle_around_active(
             &mut canvas,
             rotate_rectangle(
-                fragments[active_fragment].real_position(),
+                doodads[active_fragment].real_position(),
                 main_ui.get_rotation(),
                 main_ui.get_scale(),
             ),
@@ -285,7 +308,7 @@ fn main() {
         ui.show_demo_window(&mut true);
 
         canvas.window_mut().gl_make_current(&gl_context).unwrap();
-        renderer.render(ui);
+        imgui_renderer.render(ui);
 
         &canvas.present();
 
