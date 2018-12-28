@@ -282,6 +282,8 @@ fn main() {
         main_ui.draw_window(&ui);
         main_menu_ui.draw_window(&ui);
 
+        ui.show_demo_window(&mut true);
+
         canvas.window_mut().gl_make_current(&gl_context).unwrap();
         renderer.render(ui);
 
