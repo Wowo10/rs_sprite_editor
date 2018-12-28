@@ -38,10 +38,7 @@ impl<'a> Spritesheet<'a> {
         }
     }
 
-    pub fn _load(
-        texture: &'a sdl2::render::Texture<'a>,
-        frame_count: usize,
-    ) -> Self {
+    pub fn _load(texture: &'a sdl2::render::Texture<'a>, frame_count: usize) -> Self {
         let width = texture.query().width;
         let heigth = texture.query().height;
 
@@ -129,6 +126,21 @@ impl<'a> Doodad<'a> {
 
             current: 0,
         }
+    }
+
+    fn serialize(&self, origin: sdl2::rect::Point) -> String {
+
+        let mut temp = String::new();
+
+        temp += "filename";
+        temp += ";";
+        // for position in &self.positions{
+
+        //     temp += position.top_left() - origin
+
+        // }
+
+        "".to_string()
     }
 }
 
