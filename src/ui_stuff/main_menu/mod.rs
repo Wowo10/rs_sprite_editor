@@ -1,36 +1,33 @@
 use ui_stuff::*; //{im_str, ImGuiCond, Ui, UserInterface, ImString, ImVec2};
 
-pub struct MainMenuInterface {
-    pub exit: bool,
-    pub open: bool,
-    pub load: bool,
-    pub save: bool,
-    pub add: bool,
+enum WindowVisible {
+    None,
+    New,
+    Load,
+    Save,
+    AddDoodad,
+    ChangeSpritesheet,
+}
 
-    save_input: ImString,
+pub struct MainMenuInterface {
+    window: WindowVisible,
+    pub exit: bool,
+
+    text_input: ImString,
 }
 
 impl MainMenuInterface {
     pub fn new() -> Self {
         MainMenuInterface {
+            window: WindowVisible::None,
             exit: false,
-            open: false,
-            load: false,
-            save: false,
-            add: false,
 
-            save_input: ImString::with_capacity(32),
+            text_input: ImString::with_capacity(32),
         }
     }
 
     pub fn reset(&mut self) {
-        self.exit = false;
-        self.open = false;
-        self.load = false;
-        self.save = false;
-        self.add = false;
-
-        self.save_input.clear();
+        self.text_input.clear();
     }
 }
 
@@ -40,57 +37,115 @@ impl UserInterface for MainMenuInterface {
             ui.menu(im_str!("File")).build(|| {
                 if ui.menu_item(im_str!("New")).build() {
                     self.reset();
-                    //Some file menu to choose basic texture
+                    self.window = WindowVisible::New;
                 }
                 if ui.menu_item(im_str!("Load")).build() {
                     self.reset();
-                    self.load = true;
-                    //Some file menu to choose other config.csv
+                    self.window = WindowVisible::Load;
                 }
                 if ui.menu_item(im_str!("Save")).build() {
                     self.reset();
-                    self.save = true;
+                    self.window = WindowVisible::Save;
                 }
                 if ui.menu_item(im_str!("Exit")).build() {
                     self.exit = true;
                 }
             });
 
-            ui.menu(im_str!("Add")).build(|| {
-                if ui.menu_item(im_str!("Doodad")).build() {
-                    //Some file menu to choose doodad texture
+            ui.menu(im_str!("Fragments")).build(|| {
+                if ui.menu_item(im_str!("Add Doodad")).build() {
+                    self.reset();
+                    self.window = WindowVisible::AddDoodad;
+                }
+                if ui.menu_item(im_str!("Change SpriteSheet")).build() {
+                    self.reset();
+                    self.window = WindowVisible::ChangeSpritesheet;
                 }
             });
         });
 
-        if self.load {
-            ui.window(im_str!("Load File"))
-                .size((300.0, 100.0), ImGuiCond::Once)
-                .position((100.0, 100.0), ImGuiCond::Once)
-                .build(|| {
+        match self.window {
+            WindowVisible::New => {
+                ui.window(im_str!("Warning!"))
+                    .size((300.0, 100.0), ImGuiCond::Once)
+                    .position((100.0, 100.0), ImGuiCond::Once)
+                    .build(|| {
+                        ui.text("No Autosave, are you sure?");
 
-                    ui.text("Here will be File Browser -> WiP");
+                        ui.separator();
 
-                    ui.separator();
+                        if ui.button(im_str!("Yes!!"), ImVec2::new(0.0, 0.0)) {
+                            println!("New: ");
+                        }
+                    });
+            }
 
-                    if ui.button(im_str!("Load!"), ImVec2::new(0.0, 0.0)) {
-                        println!("Save: {:?}", self.save_input);
-                    }
-                });
-        }
+            WindowVisible::Load => {
+                ui.window(im_str!("Load File"))
+                    .size((300.0, 100.0), ImGuiCond::Once)
+                    .position((100.0, 100.0), ImGuiCond::Once)
+                    .build(|| {
+                        ui.text("Here will be File Browser -> WiP");
 
-        if self.save {
-            ui.window(im_str!("Save File"))
-                .size((300.0, 100.0), ImGuiCond::Once)
-                .position((100.0, 100.0), ImGuiCond::Once)
-                .build(|| {
-                    ui.input_text(im_str!("Filename"), &mut self.save_input)
-                        .build();
+                        ui.separator();
 
-                    if ui.button(im_str!("Save!"), ImVec2::new(0.0, 0.0)) {
-                        println!("Save: {:?}", self.save_input);
-                    }
-                });
+                        if ui.button(im_str!("Load!"), ImVec2::new(0.0, 0.0)) {
+                            println!("Load: ");
+                        }
+                    });
+            }
+
+            WindowVisible::Save => {
+                ui.window(im_str!("Save File"))
+                    .size((300.0, 100.0), ImGuiCond::Once)
+                    .position((100.0, 100.0), ImGuiCond::Once)
+                    .build(|| {
+                        ui.input_text(im_str!("Filename"), &mut self.text_input)
+                            .build();
+
+                        if ui.button(im_str!("Save!"), ImVec2::new(0.0, 0.0)) {
+                            println!("Save: {:?}", self.text_input);
+                        }
+                    });
+            }
+
+            WindowVisible::AddDoodad => {
+                ui.window(im_str!("Doodad choose"))
+                    .size((300.0, 100.0), ImGuiCond::Once)
+                    .position((100.0, 100.0), ImGuiCond::Once)
+                    .build(|| {
+                        ui.text("Here will be File Browser -> WiP");
+
+                        ui.separator();
+
+                        if ui.button(im_str!("Add!"), ImVec2::new(0.0, 0.0)) {
+                            println!("Add: ");
+                        }
+                    });
+            }
+
+            WindowVisible::ChangeSpritesheet => {
+                ui.window(im_str!("SpriteSheet choose"))
+                    .size((300.0, 100.0), ImGuiCond::Once)
+                    .position((100.0, 100.0), ImGuiCond::Once)
+                    .build(|| {
+                        ui.text("Here will be File Browser -> WiP");
+
+                        ui.separator();
+
+                        ui.input_text(im_str!("frames"), &mut self.text_input)
+                            .chars_decimal(true)
+                            .build();
+
+                        ui.separator();
+
+                        if ui.button(im_str!("Change!"), ImVec2::new(0.0, 0.0)) {
+                            println!("Change: {:?}", self.text_input);
+                        }
+                    });
+            }
+
+            _ => {}
         }
     }
 }
