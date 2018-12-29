@@ -13,6 +13,10 @@ pub struct MainMenuInterface {
     window: WindowVisible,
     pub exit: bool,
 
+    select1: bool,
+    select2: bool,
+    select3: bool,
+
     text_input: ImString,
 }
 
@@ -21,6 +25,10 @@ impl MainMenuInterface {
         MainMenuInterface {
             window: WindowVisible::None,
             exit: false,
+
+            select1: false,
+            select2: false,
+            select3: false,
 
             text_input: ImString::with_capacity(32),
         }
@@ -129,6 +137,45 @@ impl UserInterface for MainMenuInterface {
                     .size((300.0, 100.0), ImGuiCond::Once)
                     .position((100.0, 100.0), ImGuiCond::Once)
                     .build(|| {
+                        ui.child_frame(im_str!("child frame"), (400.0, 100.0))
+                            .show_borders(true)
+                            .always_show_vertical_scroll_bar(true)
+                            .build(|| {
+                                ui.text_colored((1.0, 0.0, 0.0, 1.0), im_str!("hello mate!"));
+                                if ui.selectable(
+                                    im_str!("selectme1!"),
+                                    self.select1,
+                                    ImGuiSelectableFlags::empty(),
+                                    ImVec2::new(0.0, 0.0),
+                                ) {
+                                    self.select1 = !self.select1
+                                }
+                                if ui.selectable(
+                                    im_str!("selectme2!"),
+                                    self.select2,
+                                    ImGuiSelectableFlags::empty(),
+                                    ImVec2::new(0.0, 0.0),
+                                ) {
+                                    self.select2 = !self.select2
+                                }
+                                if ui.selectable(
+                                    im_str!("selectme3!"),
+                                    self.select3,
+                                    ImGuiSelectableFlags::empty(),
+                                    ImVec2::new(0.0, 0.0),
+                                ) {
+                                    println!("Kurwa!");
+                                    self.select3 = !self.select3
+                                }
+                            });
+
+                        // println!(
+                        //     "1: {}, 2: {}, 3: {}",
+                        //     self.select1, self.select2, self.select3
+                        // );
+
+                        ui.separator();
+
                         ui.text("Here will be File Browser -> WiP");
 
                         ui.separator();
