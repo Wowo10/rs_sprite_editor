@@ -177,6 +177,36 @@ fn main() {
                     main_ui.scale = 4.0;
                     main_ui.did_change = true;
                 }
+                Event::KeyDown {
+                    keycode: Some(Keycode::Q),
+                    ..
+                } => {
+                    println!("//////////////////////");
+                    println!("serialize1");
+                    println!("{}", spritesheet.serialize());
+                    for doodad in &doodads {
+                        println!(
+                            "{}",
+                            doodad.serialize(spritesheet.get_position().top_left())
+                        );
+                    }
+                    println!("serialize2");
+                    println!("{}", spritesheet.serialize());
+                    for doodad in &doodads {
+                        println!(
+                            "{}",
+                            doodad.serialize2(spritesheet.get_position().top_left())
+                        );
+                    }
+                    println!("serialize3");
+                    println!("{}", spritesheet.serialize());
+                    for doodad in &doodads {
+                        println!(
+                            "{}",
+                            doodad.serialize3(spritesheet.get_position().top_left())
+                        );
+                    }
+                }
                 Event::MouseButtonDown { x, y, .. } => {
                     for i in 0..doodads.len() {
                         //TODO: Add Checking if pixel is not (0,0,0,1)
@@ -216,7 +246,7 @@ fn main() {
                         } else {
                             spritesheet.change_position(xrel, yrel);
                             for doodad in &mut doodads {
-                                doodad.change_position(xrel, yrel);
+                                doodad.change_all_positions(xrel, yrel);
                             }
                         }
                     }
@@ -255,7 +285,7 @@ fn main() {
         }
 
         canvas.set_draw_color(backgound_color);
-        canvas.clear();        
+        canvas.clear();
 
         canvas
             .set_scale(spritesheet.get_scale(), spritesheet.get_scale())

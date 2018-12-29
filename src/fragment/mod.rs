@@ -62,6 +62,16 @@ impl<'a> Spritesheet<'a> {
         self.source_rect
             .set_x(self.current as i32 * self.frame_width);
     }
+
+    pub fn serialize(&self) -> String {
+        let mut temp = String::new();
+        temp += "filename";
+        temp += ";";
+
+        temp += &self.frame_count.to_string();
+
+        temp
+    }
 }
 
 pub struct Doodad<'a> {
@@ -128,19 +138,83 @@ impl<'a> Doodad<'a> {
         }
     }
 
-    fn serialize(&self, origin: sdl2::rect::Point) -> String {
-
+    pub fn serialize(&self, origin: sdl2::rect::Point) -> String {
         let mut temp = String::new();
 
         temp += "filename";
         temp += ";";
-        // for position in &self.positions{
+        for position in &self.positions {
+            let temp_point = position.top_left() - origin;
+            temp += "(";
+            temp += &temp_point.x.to_string();
+            temp += ",";
+            temp += &temp_point.y.to_string();
+            temp += ").";
+        }
 
-        //     temp += position.top_left() - origin
+        temp += ";";
+        for rotation in &self.rotations {
+            temp += &rotation.to_string();
+            temp += ".";
+        }
 
-        // }
+        temp
+    }
 
-        "".to_string()
+    pub fn serialize2(&self, origin: sdl2::rect::Point) -> String {
+        let mut temp = String::new();
+
+        temp += "filename";
+        temp += ";";
+        for i in 0..self.positions.len() {
+            let temp_point = self.positions[i].top_left() - origin;
+            temp += "[";
+            temp += &temp_point.x.to_string();
+            temp += ",";
+            temp += &temp_point.y.to_string();
+            temp += ",";
+            temp += &self.rotations[i].to_string();
+            temp += "].";
+        }
+
+        temp
+    }
+
+    pub fn serialize3(&self, origin: sdl2::rect::Point) -> String {
+        let mut temp = String::new();
+
+        temp += "filename";
+        temp += ";";
+
+        let mut tempx = String::new();
+        let mut tempy = String::new();
+        for position in &self.positions {
+            let temp_point = position.top_left() - origin;
+
+            tempx += &temp_point.x.to_string();
+            tempx += ".";
+            tempy += &temp_point.y.to_string();
+            tempy += ".";
+        }
+
+        temp += &tempx.to_string();
+        temp += ";";
+        temp += &tempy.to_string();
+
+        temp += ";";
+        for rotation in &self.rotations {
+            temp += &rotation.to_string();
+            temp += ".";
+        }
+
+        temp
+    }
+
+    pub fn change_all_positions(&mut self, diff_x: i32, diff_y: i32){
+        for position in &mut self.positions{
+            position.x += diff_x;
+            position.y += diff_y;
+        }
     }
 }
 
