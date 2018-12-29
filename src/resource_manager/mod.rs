@@ -17,7 +17,7 @@ impl<'l> ResourceManager<'l> {
         }
     }
 
-    pub fn load(&mut self, details: String) -> Result<Rc<Texture<'l>>, String> {
+    fn load(&mut self, details: String) -> Result<Rc<Texture<'l>>, String> {
         self.cache.get(&details).cloned().map_or_else(
             || {
                 let resource = Rc::new(self.loader.load_texture(format!("resources/{}", details))?);

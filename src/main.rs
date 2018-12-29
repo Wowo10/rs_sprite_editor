@@ -8,9 +8,8 @@ use lib::*;
 
 use sdl2::pixels::Color;
 use sdl2::rect::Point;
-use std::path::Path;
 
-use sdl2::image::{LoadTexture, INIT_JPG, INIT_PNG};
+use sdl2::image::{INIT_JPG, INIT_PNG};
 
 mod fragment;
 use fragment::*;
