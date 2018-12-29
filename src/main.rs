@@ -105,22 +105,16 @@ fn main() {
         Err(err) => panic!("SDL could not convart into canvas: {}.", err),
     };
 
+    //do not touch me
     let texture_creator = canvas.texture_creator();
 
-    //let manager = ResourceManager::new(texture_creator);
-    let mut texture_manager = TextureManager::new(&texture_creator);
+    let mut manager = ResourceManager::new(&texture_creator);
 
-    let texture = texture_manager
-        .load("resources/spritesheets/animbg.png")
-        .unwrap();
+    let texture = manager.get_spritesheet("animbg.png").unwrap();
 
-    let texture2 = texture_manager
-        .load("resources/doodads/arrow.png")
-        .unwrap();
+    let texture2 = manager.get_doodad("arrow.png").unwrap();
 
-    let texture3 = texture_manager
-        .load("resources/doodads/foo.png")
-        .unwrap();
+    let texture3 = manager.get_doodad("foo.png").unwrap();
 
     let mut spritesheet = Spritesheet::new(&texture, 400, 20, 6);
 
