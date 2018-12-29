@@ -210,10 +210,14 @@ impl<'a> Doodad<'a> {
         temp
     }
 
-    pub fn change_all_positions(&mut self, diff_x: i32, diff_y: i32){
-        for position in &mut self.positions{
-            position.x += diff_x;
-            position.y += diff_y;
+    pub fn change_all_positions(&mut self, diff_x: i32, diff_y: i32) {
+        for position in &mut self.positions {
+            if position.x > 0 {
+                position.x += diff_x;
+            }
+            if position.y > 0 {
+                position.y += diff_y;
+            }
         }
     }
 }

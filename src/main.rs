@@ -24,6 +24,9 @@ use ui_stuff::*;
 mod config;
 use config::Config;
 
+mod resource_manager;
+use resource_manager::*;
+
 fn draw_rectangle_around_active(
     canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
     points: [Point; 4],
@@ -104,16 +107,19 @@ fn main() {
 
     let texture_creator = canvas.texture_creator();
 
-    let texture = texture_creator
-        .load_texture(Path::new("resources/spritesheets/animbg.png"))
+    //let manager = ResourceManager::new(texture_creator);
+    let mut texture_manager = TextureManager::new(&texture_creator);
+
+    let texture = texture_manager
+        .load("resources/spritesheets/animbg.png")
         .unwrap();
 
-    let texture2 = texture_creator
-        .load_texture(Path::new("resources/doodads/arrow.png"))
+    let texture2 = texture_manager
+        .load("resources/doodads/arrow.png")
         .unwrap();
 
-    let texture3 = texture_creator
-        .load_texture(Path::new("resources/doodads/foo.png"))
+    let texture3 = texture_manager
+        .load("resources/doodads/foo.png")
         .unwrap();
 
     let mut spritesheet = Spritesheet::new(&texture, 400, 20, 6);
