@@ -137,11 +137,8 @@ impl App {
 
         let mut manager = ResourceManager::new(&texture_creator);
 
-        let texture = manager.get_spritesheet("animbg.png");
-
-        let texture2 = manager.get_doodad("arrow.png");
-
-        let texture3 = manager.get_doodad("foo.png");
+        let mut texture = manager.get_spritesheet("animbg.png");
+        texture = manager.get_spritesheet("anim.png");
 
         let mut spritesheet = Spritesheet::new(&texture, 400, 20, 6);
 
