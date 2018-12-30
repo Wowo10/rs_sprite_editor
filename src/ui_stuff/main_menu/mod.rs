@@ -10,11 +10,24 @@ enum WindowVisible {
     ChangeSpritesheet,
 }
 
+#[derive(Clone)]
+pub enum MainMenuCommand {
+    None,
+    Exit,
+    New,
+    Load(String),
+    Save(String),
+    AddDoodad(String),
+    ChangeSpritesheet(String, u8),
+}
+
 pub struct MainMenuInterface {
     window: WindowVisible,
+    command: MainMenuCommand,
     pub exit: bool,
 
     text_input: ImString,
+    frames_input: i32,
 
     selected: usize,
     list_directory: Vec<ImString>,
@@ -24,17 +37,22 @@ impl MainMenuInterface {
     pub fn new() -> Self {
         MainMenuInterface {
             window: WindowVisible::None,
+            command: MainMenuCommand::None,
+
             exit: false,
 
-            text_input: ImString::with_capacity(32),
+            text_input: ImString::with_capacity(64),
+            frames_input: 0,
 
             selected: 0,
             list_directory: Vec::new(),
         }
     }
 
-    pub fn reset(&mut self) {
+    fn reset(&mut self) {
         self.text_input.clear();
+        self.frames_input = 0;
+
         self.selected = 0;
 
         match self.window {
@@ -49,6 +67,14 @@ impl MainMenuInterface {
             }
             _ => {}
         }
+    }
+
+    pub fn check(&mut self) -> MainMenuCommand {
+        let temp = self.command.clone();
+
+        self.command = MainMenuCommand::None;
+
+        temp
     }
 }
 
@@ -69,7 +95,7 @@ impl UserInterface for MainMenuInterface {
                     self.reset();
                 }
                 if ui.menu_item(im_str!("Exit")).build() {
-                    self.exit = true;
+                    self.command = MainMenuCommand::Exit;
                 }
             });
 
@@ -98,6 +124,7 @@ impl UserInterface for MainMenuInterface {
                         if ui.button(im_str!("Yes!!"), ImVec2::new(0.0, 0.0)) {
                             println!("New: ");
                             self.window = WindowVisible::None;
+                            self.command = MainMenuCommand::New;
                         }
                     });
             }
@@ -127,8 +154,11 @@ impl UserInterface for MainMenuInterface {
 
                         if ui.button(im_str!("Load!"), ImVec2::new(0.0, 0.0)) {
                             if self.selected < self.list_directory.len() {
-                                println!("Load: ");
+                                println!("Load: {:?}", self.list_directory[self.selected]);
                                 self.window = WindowVisible::None;
+                                self.command = MainMenuCommand::Load(
+                                    self.list_directory[self.selected].to_str().to_owned(),
+                                );
                             }
                         }
                     });
@@ -149,7 +179,7 @@ impl UserInterface for MainMenuInterface {
                                         false,
                                         ImGuiSelectableFlags::empty(),
                                         ImVec2::new(0.0, 0.0),
-                                    ){
+                                    ) {
                                         self.text_input = self.list_directory[i].clone();
                                     }
                                 }
@@ -162,6 +192,8 @@ impl UserInterface for MainMenuInterface {
                             if self.text_input != ImString::new("") {
                                 println!("Save: {:?}", self.text_input);
                                 self.window = WindowVisible::None;
+                                self.command =
+                                    MainMenuCommand::Save(self.text_input.to_str().to_owned());
                             }
                         }
                     });
@@ -191,11 +223,16 @@ impl UserInterface for MainMenuInterface {
                         ui.separator();
 
                         if ui.button(im_str!("Add!"), ImVec2::new(0.0, 0.0)) {
-                            println!(
-                                "Add to: {:?}, frames: {:?}",
-                                self.list_directory[self.selected], self.text_input
-                            );
-                            self.window = WindowVisible::None;
+                            if self.selected < self.list_directory.len() {
+                                println!(
+                                    "Add to: {:?}, frames: {:?}",
+                                    self.list_directory[self.selected], self.text_input
+                                );
+                                self.window = WindowVisible::None;
+                                self.command = MainMenuCommand::AddDoodad(
+                                    self.list_directory[self.selected].to_str().to_owned(),
+                                );
+                            }
                         }
                     });
             }
@@ -223,19 +260,23 @@ impl UserInterface for MainMenuInterface {
 
                         ui.separator();
 
-                        ui.input_text(im_str!("frames"), &mut self.text_input)
+                        ui.input_int(im_str!("frames"), &mut self.frames_input)
                             .chars_decimal(true)
                             .build();
 
                         ui.separator();
 
                         if ui.button(im_str!("Change!"), ImVec2::new(0.0, 0.0)) {
-                            if self.text_input != ImString::new("") {
+                            if self.frames_input > 0 && self.frames_input < 127 {
                                 println!(
                                     "Change to: {:?}, frames: {:?}",
-                                    self.list_directory[self.selected], self.text_input
+                                    self.list_directory[self.selected], self.frames_input
                                 );
                                 self.window = WindowVisible::None;
+                                self.command = MainMenuCommand::ChangeSpritesheet(
+                                    self.list_directory[self.selected].to_str().to_owned(),
+                                    self.frames_input as u8,
+                                );
                             }
                         }
                     });

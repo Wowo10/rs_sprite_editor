@@ -3,7 +3,7 @@ pub mod timer;
 use self::timer::*;
 
 pub mod main_menu;
-pub use self::main_menu::MainMenuInterface;
+pub use self::main_menu::{MainMenuCommand, MainMenuInterface};
 
 pub trait UserInterface {
     fn draw_window(&mut self, ui: &Ui);

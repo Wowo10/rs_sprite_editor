@@ -41,6 +41,17 @@ fn draw_rectangle_around_active(
     canvas.draw_line(points[3], points[0]).unwrap();
 }
 
+fn handle_main_menu_command(command: ui_stuff::MainMenuCommand) -> bool {
+    match command {
+        MainMenuCommand::Exit => {
+            return true;
+        }
+        _ => {}
+    }
+
+    false
+}
+
 fn main() {
     let mut config = Config::create("./usr/config.csv");
 
@@ -134,7 +145,9 @@ fn main() {
 
     let mut frame = 0;
 
-    while !main_menu_ui.exit {
+    let mut exit = false;
+
+    while !exit {
         use sdl2::event::Event;
         use sdl2::keyboard::Keycode;
 
@@ -149,7 +162,7 @@ fn main() {
                 | Event::KeyDown {
                     keycode: Some(Keycode::Escape),
                     ..
-                } => main_menu_ui.exit = true,
+                } => exit = true,
                 Event::KeyDown {
                     keycode: Some(Keycode::Num1),
                     ..
@@ -335,6 +348,8 @@ fn main() {
 
         main_ui.draw_window(&ui);
         main_menu_ui.draw_window(&ui);
+
+        exit = exit || handle_main_menu_command(main_menu_ui.check());
 
         ui.show_demo_window(&mut true);
 
