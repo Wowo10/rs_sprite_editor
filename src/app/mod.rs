@@ -1,8 +1,8 @@
 use lib::*;
 
+use sdl2::image::{INIT_JPG, INIT_PNG};
 use sdl2::pixels::Color;
 use sdl2::rect::Point;
-use sdl2::image::{INIT_JPG, INIT_PNG};
 
 use fragment::*;
 
@@ -15,13 +15,23 @@ use config::Config;
 use resource_manager::*;
 
 pub struct App {
-    exit: bool
+    exit: bool,
+    config: Config,
+    sdl_ctx: sdl2::Sdl,
 }
 
 impl App {
     pub fn new() -> Self {
+
+let sdl_context = match sdl2::init() {
+            Ok(sdl_context) => sdl_context,
+            Err(err) => panic!("SDL could not initialize!  SDL_Error: {}", err),
+        };
+
         App {
-            exit: false
+            exit: false,
+            config: Config::create("./usr/config.csv"),
+            sdl_ctx: sdl_context,
         }
     }
 
@@ -38,7 +48,7 @@ impl App {
         canvas.draw_line(points[3], points[0]).unwrap();
     }
 
-    fn handle_main_menu_command(&mut self, command: MainMenuCommand){
+    fn handle_main_menu_command(&mut self, command: MainMenuCommand) {
         match command {
             MainMenuCommand::Exit => {
                 self.exit = true;
@@ -48,18 +58,8 @@ impl App {
     }
 
     pub fn run(&mut self) {
-        let mut config = Config::create("./usr/config.csv");
-
-        let width = config.read("width").parse::<u32>().unwrap();
-        let height = config.read("height").parse::<u32>().unwrap();
-
-        let backgound_color = config.read_color("background_color");
-
-        let sdl_context = match sdl2::init() {
-            Ok(sdl_context) => sdl_context,
-            Err(err) => panic!("SDL could not initialize!  SDL_Error: {}", err),
-        };
-        let video = match sdl_context.video() {
+        
+        let video = match self.sdl_ctx.video() {
             Ok(video) => video,
             Err(err) => panic!(
                 "Could not obtain handle to the video subsystem! SDL_Error: {}",
@@ -73,6 +73,8 @@ impl App {
             gl_attr.set_context_version(3, 1);
         }
 
+        let width = self.config.read("width").parse::<u32>().unwrap();
+        let height = self.config.read("height").parse::<u32>().unwrap();
         let window = match video
             .window("rust-imgui-sdl2 demo", width, height)
             .position_centered()
@@ -102,7 +104,7 @@ impl App {
         let imgui_renderer =
             imgui_opengl_renderer::Renderer::new(&mut imgui, |s| video.gl_get_proc_address(s) as _);
 
-        let mut event_pump = match sdl_context.event_pump() {
+        let mut event_pump = match self.sdl_ctx.event_pump() {
             Ok(event_pump) => event_pump,
             Err(err) => panic!("SDL could not get event_pump: {}.", err),
         };
@@ -291,7 +293,7 @@ impl App {
                 frame = main_ui.frame();
             }
 
-            canvas.set_draw_color(backgound_color);
+            canvas.set_draw_color(self.config.read_color("background_color"));
             canvas.clear();
 
             canvas
