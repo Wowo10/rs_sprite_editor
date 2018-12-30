@@ -14,11 +14,15 @@ use config::Config;
 
 use resource_manager::*;
 
-pub struct App {}
+pub struct App {
+    exit: bool
+}
 
 impl App {
     pub fn new() -> Self {
-        App {}
+        App {
+            exit: false
+        }
     }
 
     fn draw_rectangle_around_active(
@@ -34,15 +38,13 @@ impl App {
         canvas.draw_line(points[3], points[0]).unwrap();
     }
 
-    fn handle_main_menu_command(command: MainMenuCommand) -> bool {
+    fn handle_main_menu_command(&mut self, command: MainMenuCommand){
         match command {
             MainMenuCommand::Exit => {
-                return true;
+                self.exit = true;
             }
             _ => {}
         }
-
-        false
     }
 
     pub fn run(&mut self) {
@@ -138,9 +140,7 @@ impl App {
 
         let mut frame = 0;
 
-        let mut exit = false;
-
-        while !exit {
+        while !self.exit {
             use sdl2::event::Event;
             use sdl2::keyboard::Keycode;
 
@@ -155,7 +155,7 @@ impl App {
                     | Event::KeyDown {
                         keycode: Some(Keycode::Escape),
                         ..
-                    } => exit = true,
+                    } => self.exit = true,
                     Event::KeyDown {
                         keycode: Some(Keycode::Num1),
                         ..
@@ -342,7 +342,7 @@ impl App {
             main_ui.draw_window(&ui);
             main_menu_ui.draw_window(&ui);
 
-            exit = exit || App::handle_main_menu_command(main_menu_ui.check());
+            self.handle_main_menu_command(main_menu_ui.check());
 
             ui.show_demo_window(&mut true);
 
