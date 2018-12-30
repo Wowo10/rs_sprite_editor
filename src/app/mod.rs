@@ -22,6 +22,11 @@ pub struct App {
 
     main_ui: MainInterface,
     main_menu_ui: MainMenuInterface,
+
+    active_doodad: usize,
+    holding_button: bool,
+    holding_index: i32,
+    frame: i32,
 }
 
 impl App {
@@ -53,6 +58,11 @@ impl App {
 
             main_ui: MainInterface::new(),
             main_menu_ui: MainMenuInterface::new(),
+
+            active_doodad: 0,
+            holding_button: false,
+            holding_index: -1,
+            frame: 0,
         }
     }
 
@@ -140,12 +150,9 @@ impl App {
         doodads.push(Doodad::new(&texture2, 100, 100, 6));
         doodads.push(Doodad::new(&texture3, 100, 100, 6));
 
-        let mut active_fragment = 0;
+        
 
-        let mut holding_button = false;
-        let mut holding_index: i32 = -1;
-
-        let mut frame = 0;
+        
 
         while !self.exit {
             use sdl2::event::Event;
@@ -235,28 +242,28 @@ impl App {
                             );
 
                             if check {
-                                active_fragment = i;
+                                self.active_doodad = i;
                                 self.main_ui.change_settings(
                                     doodads[i].get_scale(),
                                     doodads[i].get_rotation() as f32,
                                 );
-                                holding_index = i as i32;
+                                self.holding_index = i as i32;
                                 break;
                             }
                         }
 
-                        holding_button = true;
+                        self.holding_button = true;
                     }
 
                     Event::MouseButtonUp { .. } => {
-                        holding_button = false;
-                        holding_index = -1;
+                        self.holding_button = false;
+                        self.holding_index = -1;
                     }
 
                     Event::MouseMotion { xrel, yrel, .. } => {
-                        if holding_button {
-                            if holding_index != -1 {
-                                doodads[holding_index as usize].change_position(xrel, yrel);
+                        if self.holding_button {
+                            if self.holding_index != -1 {
+                                doodads[self.holding_index as usize].change_position(xrel, yrel);
                             } else {
                                 spritesheet.change_position(xrel, yrel);
                                 for doodad in &mut doodads {
@@ -272,8 +279,8 @@ impl App {
             let check = self.main_ui.update_check();
 
             if check.0 {
-                doodads[active_fragment].set_rotation(self.main_ui.get_rotation().into());
-                doodads[active_fragment].set_scale(self.main_ui.get_scale());
+                doodads[self.active_doodad].set_rotation(self.main_ui.get_rotation().into());
+                doodads[self.active_doodad].set_scale(self.main_ui.get_scale());
 
                 let frame = self.main_ui.get_frame();
 
@@ -290,12 +297,12 @@ impl App {
                 spritesheet.reset_frames();
             }
 
-            if self.main_ui.play() && frame != self.main_ui.frame() {
+            if self.main_ui.play() && self.frame != self.main_ui.frame() {
                 for fragment in &mut doodads {
                     fragment.next_frame();
                 }
                 spritesheet.next_frame();
-                frame = self.main_ui.frame();
+                self.frame = self.main_ui.frame();
             }
 
             canvas.set_draw_color(self.config.read_color("background_color"));
@@ -338,7 +345,7 @@ impl App {
             App::draw_rectangle_around_active(
                 &mut canvas,
                 rotate_rectangle(
-                    doodads[active_fragment].real_position(),
+                    doodads[self.active_doodad].real_position(),
                     self.main_ui.get_rotation(),
                     self.main_ui.get_scale(),
                 ),
