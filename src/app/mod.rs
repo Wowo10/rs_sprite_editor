@@ -19,11 +19,13 @@ pub struct App {
     config: Config,
     sdl_ctx: sdl2::Sdl,
     video: sdl2::VideoSubsystem,
+
+    main_ui: MainInterface,
+    main_menu_ui: MainMenuInterface,
 }
 
 impl App {
     pub fn new() -> Self {
-
         let sdl_context = match sdl2::init() {
             Ok(sdl_context) => sdl_context,
             Err(err) => panic!("SDL could not initialize!  SDL_Error: {}", err),
@@ -37,11 +39,20 @@ impl App {
             ),
         };
 
+        {
+            let gl_attr = video.gl_attr();
+            gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
+            gl_attr.set_context_version(3, 1);
+        }
+
         App {
             exit: false,
             config: Config::create("./usr/config.csv"),
             sdl_ctx: sdl_context,
             video: video,
+
+            main_ui: MainInterface::new(),
+            main_menu_ui: MainMenuInterface::new(),
         }
     }
 
@@ -68,18 +79,10 @@ impl App {
     }
 
     pub fn run(&mut self) {
-        
-        
-
-        {
-            let gl_attr = self.video.gl_attr();
-            gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
-            gl_attr.set_context_version(3, 1);
-        }
-
         let width = self.config.read("width").parse::<u32>().unwrap();
         let height = self.config.read("height").parse::<u32>().unwrap();
-        let window = match self.video
+        let window = match self
+            .video
             .window("rust-imgui-sdl2 demo", width, height)
             .position_centered()
             .resizable()
@@ -105,8 +108,9 @@ impl App {
 
         let mut imgui_sdl2 = ImguiSdl2::new(&mut imgui);
 
-        let imgui_renderer =
-            imgui_opengl_renderer::Renderer::new(&mut imgui, |s| self.video.gl_get_proc_address(s) as _);
+        let imgui_renderer = imgui_opengl_renderer::Renderer::new(&mut imgui, |s| {
+            self.video.gl_get_proc_address(s) as _
+        });
 
         let mut event_pump = match self.sdl_ctx.event_pump() {
             Ok(event_pump) => event_pump,
@@ -141,9 +145,6 @@ impl App {
         let mut holding_button = false;
         let mut holding_index: i32 = -1;
 
-        let mut main_ui = MainInterface::new();
-        let mut main_menu_ui = MainMenuInterface::new();
-
         let mut frame = 0;
 
         while !self.exit {
@@ -166,29 +167,29 @@ impl App {
                         keycode: Some(Keycode::Num1),
                         ..
                     } => {
-                        main_ui.scale = 1.0;
-                        main_ui.did_change = true;
+                        self.main_ui.scale = 1.0;
+                        self.main_ui.did_change = true;
                     }
                     Event::KeyDown {
                         keycode: Some(Keycode::Num2),
                         ..
                     } => {
-                        main_ui.scale = 2.0;
-                        main_ui.did_change = true;
+                        self.main_ui.scale = 2.0;
+                        self.main_ui.did_change = true;
                     }
                     Event::KeyDown {
                         keycode: Some(Keycode::Num3),
                         ..
                     } => {
-                        main_ui.scale = 3.0;
-                        main_ui.did_change = true;
+                        self.main_ui.scale = 3.0;
+                        self.main_ui.did_change = true;
                     }
                     Event::KeyDown {
                         keycode: Some(Keycode::Num4),
                         ..
                     } => {
-                        main_ui.scale = 4.0;
-                        main_ui.did_change = true;
+                        self.main_ui.scale = 4.0;
+                        self.main_ui.did_change = true;
                     }
                     Event::KeyDown {
                         keycode: Some(Keycode::Q),
@@ -235,7 +236,7 @@ impl App {
 
                             if check {
                                 active_fragment = i;
-                                main_ui.change_settings(
+                                self.main_ui.change_settings(
                                     doodads[i].get_scale(),
                                     doodads[i].get_rotation() as f32,
                                 );
@@ -268,13 +269,13 @@ impl App {
                 }
             }
 
-            let check = main_ui.update_check();
+            let check = self.main_ui.update_check();
 
             if check.0 {
-                doodads[active_fragment].set_rotation(main_ui.get_rotation().into());
-                doodads[active_fragment].set_scale(main_ui.get_scale());
+                doodads[active_fragment].set_rotation(self.main_ui.get_rotation().into());
+                doodads[active_fragment].set_scale(self.main_ui.get_scale());
 
-                let frame = main_ui.get_frame();
+                let frame = self.main_ui.get_frame();
 
                 for fragment in &mut doodads {
                     fragment.set_frame(frame);
@@ -289,12 +290,12 @@ impl App {
                 spritesheet.reset_frames();
             }
 
-            if main_ui.play() && frame != main_ui.frame() {
+            if self.main_ui.play() && frame != self.main_ui.frame() {
                 for fragment in &mut doodads {
                     fragment.next_frame();
                 }
                 spritesheet.next_frame();
-                frame = main_ui.frame();
+                frame = self.main_ui.frame();
             }
 
             canvas.set_draw_color(self.config.read_color("background_color"));
@@ -338,17 +339,19 @@ impl App {
                 &mut canvas,
                 rotate_rectangle(
                     doodads[active_fragment].real_position(),
-                    main_ui.get_rotation(),
-                    main_ui.get_scale(),
+                    self.main_ui.get_rotation(),
+                    self.main_ui.get_scale(),
                 ),
             );
 
             let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
 
-            main_ui.draw_window(&ui);
-            main_menu_ui.draw_window(&ui);
+            self.main_ui.draw_window(&ui);
+            self.main_menu_ui.draw_window(&ui);
 
-            self.handle_main_menu_command(main_menu_ui.check());
+            let command = self.main_menu_ui.check();
+
+            self.handle_main_menu_command(command);
 
             ui.show_demo_window(&mut true);
 
