@@ -147,13 +147,6 @@ impl App {
 
         let mut doodads: Vec<Doodad> = Vec::new();
 
-        doodads.push(Doodad::new(&texture2, 100, 100, 6));
-        doodads.push(Doodad::new(&texture3, 100, 100, 6));
-
-        
-
-        
-
         while !self.exit {
             use sdl2::event::Event;
             use sdl2::keyboard::Keycode;
@@ -278,7 +271,7 @@ impl App {
 
             let check = self.main_ui.update_check();
 
-            if check.0 {
+            if check.0 && doodads.len() != 0 {
                 doodads[self.active_doodad].set_rotation(self.main_ui.get_rotation().into());
                 doodads[self.active_doodad].set_scale(self.main_ui.get_scale());
 
@@ -342,14 +335,16 @@ impl App {
                     .unwrap();
             }
 
-            App::draw_rectangle_around_active(
-                &mut canvas,
-                rotate_rectangle(
-                    doodads[self.active_doodad].real_position(),
-                    self.main_ui.get_rotation(),
-                    self.main_ui.get_scale(),
-                ),
-            );
+            if doodads.len() != 0 {
+                App::draw_rectangle_around_active(
+                    &mut canvas,
+                    rotate_rectangle(
+                        doodads[self.active_doodad].real_position(),
+                        self.main_ui.get_rotation(),
+                        self.main_ui.get_scale(),
+                    ),
+                );
+            }
 
             let ui = imgui_sdl2.frame(&canvas.window(), &mut imgui, &event_pump);
 
