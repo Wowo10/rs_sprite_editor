@@ -18,20 +18,30 @@ pub struct App {
     exit: bool,
     config: Config,
     sdl_ctx: sdl2::Sdl,
+    video: sdl2::VideoSubsystem,
 }
 
 impl App {
     pub fn new() -> Self {
 
-let sdl_context = match sdl2::init() {
+        let sdl_context = match sdl2::init() {
             Ok(sdl_context) => sdl_context,
             Err(err) => panic!("SDL could not initialize!  SDL_Error: {}", err),
+        };
+
+        let video = match sdl_context.video() {
+            Ok(video) => video,
+            Err(err) => panic!(
+                "Could not obtain handle to the video subsystem! SDL_Error: {}",
+                err
+            ),
         };
 
         App {
             exit: false,
             config: Config::create("./usr/config.csv"),
             sdl_ctx: sdl_context,
+            video: video,
         }
     }
 
@@ -59,23 +69,17 @@ let sdl_context = match sdl2::init() {
 
     pub fn run(&mut self) {
         
-        let video = match self.sdl_ctx.video() {
-            Ok(video) => video,
-            Err(err) => panic!(
-                "Could not obtain handle to the video subsystem! SDL_Error: {}",
-                err
-            ),
-        };
+        
 
         {
-            let gl_attr = video.gl_attr();
+            let gl_attr = self.video.gl_attr();
             gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
             gl_attr.set_context_version(3, 1);
         }
 
         let width = self.config.read("width").parse::<u32>().unwrap();
         let height = self.config.read("height").parse::<u32>().unwrap();
-        let window = match video
+        let window = match self.video
             .window("rust-imgui-sdl2 demo", width, height)
             .position_centered()
             .resizable()
@@ -93,7 +97,7 @@ let sdl_context = match sdl2::init() {
             Err(err) => panic!("SDL could not create Gl Context: {}.", err),
         };
 
-        gl::load_with(|s| video.gl_get_proc_address(s) as _);
+        gl::load_with(|s| self.video.gl_get_proc_address(s) as _);
 
         let mut imgui = imgui::ImGui::init();
         imgui.set_ini_filename(Some(imgui::ImString::new("imgui.ini")));
@@ -102,7 +106,7 @@ let sdl_context = match sdl2::init() {
         let mut imgui_sdl2 = ImguiSdl2::new(&mut imgui);
 
         let imgui_renderer =
-            imgui_opengl_renderer::Renderer::new(&mut imgui, |s| video.gl_get_proc_address(s) as _);
+            imgui_opengl_renderer::Renderer::new(&mut imgui, |s| self.video.gl_get_proc_address(s) as _);
 
         let mut event_pump = match self.sdl_ctx.event_pump() {
             Ok(event_pump) => event_pump,
