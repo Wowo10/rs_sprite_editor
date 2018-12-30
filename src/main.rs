@@ -17,6 +17,8 @@ use fragment::*;
 mod mymath;
 use mymath::{check_rect2, rotate_rectangle};
 
+mod file_utils;
+
 mod ui_stuff;
 use ui_stuff::*;
 
@@ -109,11 +111,11 @@ fn main() {
 
     let mut manager = ResourceManager::new(&texture_creator);
 
-    let texture = manager.get_spritesheet("animbg.png").unwrap();
+    let texture = manager.get_spritesheet("animbg.png");
 
-    let texture2 = manager.get_doodad("arrow.png").unwrap();
+    let texture2 = manager.get_doodad("arrow.png");
 
-    let texture3 = manager.get_doodad("foo.png").unwrap();
+    let texture3 = manager.get_doodad("foo.png");
 
     let mut spritesheet = Spritesheet::new(&texture, 400, 20, 6);
 

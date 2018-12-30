@@ -28,11 +28,11 @@ impl<'l> ResourceManager<'l> {
         )
     }
 
-    pub fn get_spritesheet(&mut self, name: &str) -> Result<Rc<Texture<'l>>, String> {
-        self.load("spritesheets/".to_string() + name)
+    pub fn get_spritesheet(&mut self, name: &str) -> Rc<Texture<'l>> {
+        self.load("spritesheets/".to_string() + name).unwrap()
     }
 
-    pub fn get_doodad(&mut self, name: &str) -> Result<Rc<Texture<'l>>, String> {
-        self.load("doodads/".to_string() + name)
+    pub fn get_doodad(&mut self, name: &str) -> Rc<Texture<'l>> {
+        self.load("doodads/".to_string() + name).unwrap()
     }
 }

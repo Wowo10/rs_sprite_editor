@@ -1,4 +1,5 @@
-use ui_stuff::*; //{im_str, ImGuiCond, Ui, UserInterface, ImString, ImVec2};
+use file_utils;
+use ui_stuff::*;
 
 enum WindowVisible {
     None,
@@ -13,11 +14,10 @@ pub struct MainMenuInterface {
     window: WindowVisible,
     pub exit: bool,
 
-    select1: bool,
-    select2: bool,
-    select3: bool,
-
     text_input: ImString,
+
+    selected: usize,
+    list_directory: Vec<ImString>,
 }
 
 impl MainMenuInterface {
@@ -26,16 +26,16 @@ impl MainMenuInterface {
             window: WindowVisible::None,
             exit: false,
 
-            select1: false,
-            select2: false,
-            select3: false,
-
             text_input: ImString::with_capacity(32),
+
+            selected: 0,
+            list_directory: Vec::new(),
         }
     }
 
     pub fn reset(&mut self) {
         self.text_input.clear();
+        self.list_directory = file_utils::get_imgui_directory("./resources/spritesheets");
     }
 }
 
@@ -134,49 +134,24 @@ impl UserInterface for MainMenuInterface {
 
             WindowVisible::ChangeSpritesheet => {
                 ui.window(im_str!("SpriteSheet choose"))
-                    .size((300.0, 100.0), ImGuiCond::Once)
+                    .size((300.0, 500.0), ImGuiCond::Once)
                     .position((100.0, 100.0), ImGuiCond::Once)
                     .build(|| {
-                        ui.child_frame(im_str!("child frame"), (400.0, 100.0))
+                        ui.child_frame(im_str!("child frame"), (280.0, 200.0))
                             .show_borders(true)
                             .always_show_vertical_scroll_bar(true)
                             .build(|| {
-                                ui.text_colored((1.0, 0.0, 0.0, 1.0), im_str!("hello mate!"));
-                                if ui.selectable(
-                                    im_str!("selectme1!"),
-                                    self.select1,
-                                    ImGuiSelectableFlags::empty(),
-                                    ImVec2::new(0.0, 0.0),
-                                ) {
-                                    self.select1 = !self.select1
-                                }
-                                if ui.selectable(
-                                    im_str!("selectme2!"),
-                                    self.select2,
-                                    ImGuiSelectableFlags::empty(),
-                                    ImVec2::new(0.0, 0.0),
-                                ) {
-                                    self.select2 = !self.select2
-                                }
-                                if ui.selectable(
-                                    im_str!("selectme3!"),
-                                    self.select3,
-                                    ImGuiSelectableFlags::empty(),
-                                    ImVec2::new(0.0, 0.0),
-                                ) {
-                                    println!("Kurwa!");
-                                    self.select3 = !self.select3
+                                for i in 0..self.list_directory.len() {
+                                    if ui.selectable(
+                                        &self.list_directory[i],
+                                        i == self.selected,
+                                        ImGuiSelectableFlags::empty(),
+                                        ImVec2::new(0.0, 0.0),
+                                    ) {
+                                        self.selected = i;
+                                    }
                                 }
                             });
-
-                        // println!(
-                        //     "1: {}, 2: {}, 3: {}",
-                        //     self.select1, self.select2, self.select3
-                        // );
-
-                        ui.separator();
-
-                        ui.text("Here will be File Browser -> WiP");
 
                         ui.separator();
 
@@ -187,7 +162,12 @@ impl UserInterface for MainMenuInterface {
                         ui.separator();
 
                         if ui.button(im_str!("Change!"), ImVec2::new(0.0, 0.0)) {
-                            println!("Change: {:?}", self.text_input);
+                            if self.text_input != ImString::new("") {
+                                println!(
+                                    "Change to: {:?}, frames: {:?}",
+                                    self.list_directory[self.selected], self.text_input
+                                );
+                            }
                         }
                     });
             }

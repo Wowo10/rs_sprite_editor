@@ -212,10 +212,10 @@ impl<'a> Doodad<'a> {
 
     pub fn change_all_positions(&mut self, diff_x: i32, diff_y: i32) {
         for position in &mut self.positions {
-            if position.x > 0 {
+            if position.x > 0 || diff_x > 0 {
                 position.x += diff_x;
             }
-            if position.y > 0 {
+            if position.y > 0 || diff_y > 0 {
                 position.y += diff_y;
             }
         }
@@ -272,10 +272,14 @@ impl<'a> Fragment<'a> for Spritesheet<'a> {
     fn real_position(&self) -> sdl2::rect::Rect {
         self.position
     }
-
+    
     fn change_position(&mut self, diff_x: i32, diff_y: i32) {
-        self.position.x += diff_x;
-        self.position.y += diff_y;
+        if self.position.x > 0 || diff_x > 0 {
+            self.position.x += diff_x;
+        }
+        if self.position.y > 0 || diff_y > 0 {
+            self.position.y += diff_y;
+        }
     }
     fn set_rotation(&mut self, rotation: f64) {
         self.rotation = rotation;
