@@ -403,7 +403,7 @@ impl App {
                         Spritesheet::new(texture, position.x, position.y, frames as usize);
 
                     for doodad in &mut doodads{
-                        doodad.set_frame(frames.into());
+                        doodad.set_frames_amount(frames.into());
                     }
 
                     self.main_ui.reset(frames as i32);

@@ -18,6 +18,7 @@ pub struct MainInterface {
     frame_timer: Timer,
     frame_time: i32,
     frames_per_anim: i32,
+    framerate: i32,
 
     pub did_change: bool,
     did_change_play: bool,
@@ -34,6 +35,7 @@ impl MainInterface {
             frame_timer: Timer::create(),
             frame_time: 1000,
             frames_per_anim: 6,
+            framerate: 1000,
 
             did_change: false,
             did_change_play: false,
@@ -47,9 +49,10 @@ impl MainInterface {
         self.current_frame
     }
 
-    pub fn change_settings(&mut self, scale: f32, rotation: f32) {
+    pub fn change_settings(&mut self, scale: f32, rotation: f32, framerate: i32) {
         self.scale = scale;
         self.rotation = rotation;
+        self.framerate = framerate;
     }
 
     pub fn reset(&mut self, frames: i32) {
@@ -125,6 +128,14 @@ impl UserInterface for MainInterface {
                         0,
                         self.frames_per_anim - 1,
                     )
+                    .build()
+                {
+                    self.did_change = true;
+                }
+
+                if ui
+                    .input_int(im_str!("framerate"), &mut self.framerate)
+                    .chars_decimal(true)
                     .build()
                 {
                     self.did_change = true;

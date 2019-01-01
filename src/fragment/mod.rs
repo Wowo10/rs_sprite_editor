@@ -125,7 +125,7 @@ impl<'a> Doodad<'a> {
         }
     }
 
-    pub fn set_frames(&mut self, frames: usize){
+    pub fn set_frames_amount(&mut self, frames: usize){
         while frames != self.positions.len(){
             if frames > self.positions.len() {
                 let cloned_first = self.positions.first().cloned().unwrap();
