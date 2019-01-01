@@ -225,8 +225,8 @@ impl UserInterface for MainMenuInterface {
                         if ui.button(im_str!("Add!"), ImVec2::new(0.0, 0.0)) {
                             if self.selected < self.list_directory.len() {
                                 println!(
-                                    "Add to: {:?}, frames: {:?}",
-                                    self.list_directory[self.selected], self.text_input
+                                    "Add to: {:?}",
+                                    self.list_directory[self.selected]
                                 );
                                 self.window = WindowVisible::None;
                                 self.command = MainMenuCommand::AddDoodad(

@@ -79,14 +79,26 @@ impl App {
         canvas.draw_line(points[3], points[0]).unwrap();
     }
 
-    fn handle_main_menu_command(&mut self, command: MainMenuCommand) {
-        match command {
-            MainMenuCommand::Exit => {
-                self.exit = true;
-            }
-            _ => {}
-        }
-    }
+    // fn handle_main_menu_command(
+    //     &mut self,
+    //     command: MainMenuCommand,
+    //     manager: &ResourceManager,
+    //     spritesheet: &Spritesheet,
+    //     doodads: &Vec<Doodad>,
+    // ) {
+    //     match command {
+    //         MainMenuCommand::Exit => {
+    //             self.exit = true;
+    //         }
+    //         MainMenuCommand::AddDoodad(name) => {
+
+    //             let texture = manager.get_doodad("");
+
+    //             doodads.push(Doodad::new(texture, 100, 100, 10));
+    //         }
+    //         _ => {}
+    //     }
+    // }
 
     pub fn run(&mut self) {
         let width = self.config.read("width").parse::<u32>().unwrap();
@@ -138,9 +150,9 @@ impl App {
 
         let mut manager = ResourceManager::new(&texture_creator);
 
-        let texture = manager.get_spritesheet("animbg.png");
+        let texture = manager.get_spritesheet("dummy.png");
 
-        let mut spritesheet = Spritesheet::new(texture, 400, 20, 6);
+        let mut spritesheet = Spritesheet::new(texture, 400, 20, 10);
 
         let mut doodads: Vec<Doodad> = Vec::new();
 
@@ -350,7 +362,19 @@ impl App {
 
             let command = self.main_menu_ui.check();
 
-            self.handle_main_menu_command(command);
+            // self.handle_main_menu_command(command, &manager, &spritesheet, &doodads);
+
+            match command {
+                MainMenuCommand::Exit => {
+                    self.exit = true;
+                }
+                MainMenuCommand::AddDoodad(name) => {
+                    let texture = manager.get_doodad(&(name + ".png"));
+
+                    doodads.push(Doodad::new(texture, 100, 100, 10));
+                }
+                _ => {}
+            }
 
             ui.show_demo_window(&mut true);
 
