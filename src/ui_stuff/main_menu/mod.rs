@@ -15,6 +15,7 @@ pub enum MainMenuCommand {
     None,
     Exit,
     New,
+    ClearDoodads,
     Load(String),
     Save(String),
     AddDoodad(String),
@@ -104,6 +105,12 @@ impl UserInterface for MainMenuInterface {
                     self.window = WindowVisible::AddDoodad;
                     self.reset();
                 }
+                if ui.menu_item(im_str!("Clear Doodads")).build() {
+                    self.window = WindowVisible::None;
+                    self.command = MainMenuCommand::ClearDoodads;
+                    println!("Clear!");
+                    self.reset();
+                }
                 if ui.menu_item(im_str!("Change SpriteSheet")).build() {
                     self.window = WindowVisible::ChangeSpritesheet;
                     self.reset();
@@ -122,7 +129,7 @@ impl UserInterface for MainMenuInterface {
                         ui.separator();
 
                         if ui.button(im_str!("Yes!!"), ImVec2::new(0.0, 0.0)) {
-                            println!("New: ");
+                            println!("New!");
                             self.window = WindowVisible::None;
                             self.command = MainMenuCommand::New;
                         }

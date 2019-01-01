@@ -52,6 +52,13 @@ impl MainInterface {
         self.rotation = rotation;
     }
 
+    pub fn reset(&mut self, frames: i32) {
+        self.frame_timer.reset();
+        self.play = false;
+        self.current_frame = 0;
+        self.frames_per_anim = frames;
+    }
+
     pub fn update_check(&mut self) -> (bool, bool) {
         let did_change: (bool, bool) = (self.did_change, self.did_change_play);
 

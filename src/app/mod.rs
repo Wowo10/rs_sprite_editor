@@ -23,7 +23,7 @@ pub struct App {
     main_ui: MainInterface,
     main_menu_ui: MainMenuInterface,
 
-    active_doodad: usize,
+    active_doodad: usize, //temporary always 0
     holding_button: bool,
     holding_index: i32,
     frame: i32,
@@ -79,6 +79,12 @@ impl App {
         canvas.draw_line(points[3], points[0]).unwrap();
     }
 
+    fn bring_to_front(vec: &mut Vec<Doodad>, index: usize) {
+        let el = vec.remove(index);
+        vec.insert(0, el);
+    }
+
+    //cannot move to function, sad
     // fn handle_main_menu_command(
     //     &mut self,
     //     command: MainMenuCommand,
@@ -152,7 +158,8 @@ impl App {
 
         let texture = manager.get_spritesheet("dummy.png");
 
-        let mut spritesheet = Spritesheet::new(texture, 400, 20, 10);
+        let mut spritesheet = Spritesheet::new(texture, 100, 100, 1); //TODO: parametrize
+        self.main_ui.reset(1);
 
         let mut doodads: Vec<Doodad> = Vec::new();
 
@@ -244,12 +251,13 @@ impl App {
                             );
 
                             if check {
-                                self.active_doodad = i;
+                                self.active_doodad = 0; //i; temporary -> may be better to add some new menu
                                 self.main_ui.change_settings(
                                     doodads[i].get_scale(),
                                     doodads[i].get_rotation() as f32,
                                 );
-                                self.holding_index = i as i32;
+                                self.holding_index = 0; //i as i32; also -> probably will move to bool
+                                App::bring_to_front(&mut doodads, i);
                                 break;
                             }
                         }
@@ -326,17 +334,17 @@ impl App {
                 )
                 .unwrap();
 
-            for fragment in &doodads {
+            for doodad in doodads.iter().rev() {
                 canvas
-                    .set_scale(fragment.get_scale(), fragment.get_scale())
+                    .set_scale(doodad.get_scale(), doodad.get_scale())
                     .unwrap();
 
                 canvas
                     .copy_ex(
-                        fragment.get_texture(),
-                        Some(fragment.get_source_rect()),
-                        Some(fragment.draw_position()),
-                        fragment.get_rotation(),
+                        doodad.get_texture(),
+                        Some(doodad.get_source_rect()),
+                        Some(doodad.draw_position()),
+                        doodad.get_rotation(),
                         None,
                         false,
                         false,
@@ -365,6 +373,14 @@ impl App {
             // self.handle_main_menu_command(command, &manager, &spritesheet, &doodads);
 
             match command {
+                MainMenuCommand::New => {
+                    doodads.clear();
+
+                    spritesheet =
+                        Spritesheet::new(manager.get_spritesheet(&("dummy.png")), 100, 100, 1);
+
+                    self.main_ui.reset(1);
+                }
                 MainMenuCommand::Exit => {
                     self.exit = true;
                 }
@@ -372,6 +388,19 @@ impl App {
                     let texture = manager.get_doodad(&(name + ".png"));
 
                     doodads.push(Doodad::new(texture, 100, 100, 10));
+                }
+                MainMenuCommand::ClearDoodads => {
+                    doodads.clear();
+                }
+                MainMenuCommand::ChangeSpritesheet(name, frames) => {
+                    let texture = manager.get_spritesheet(&(name + ".png"));
+
+                    let position = spritesheet.get_position();
+
+                    spritesheet =
+                        Spritesheet::new(texture, position.x, position.y, frames as usize);
+
+                    self.main_ui.reset(frames as i32);
                 }
                 _ => {}
             }
