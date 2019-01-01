@@ -75,6 +75,10 @@ impl<'a> Spritesheet<'a> {
 
         temp
     }
+
+    pub fn get_frames_amount(&self) -> usize {
+        self.frame_count
+    }
 }
 
 pub struct Doodad<'a> {
@@ -118,6 +122,18 @@ impl<'a> Doodad<'a> {
             rotations: rotations,
 
             current: 0,
+        }
+    }
+
+    pub fn set_frames(&mut self, frames: usize){
+        while frames != self.positions.len(){
+            if frames > self.positions.len() {
+                let cloned_first = self.positions.first().cloned().unwrap();
+                self.positions.push(cloned_first);
+            }
+            else{
+                self.positions.pop();
+            }
         }
     }
 

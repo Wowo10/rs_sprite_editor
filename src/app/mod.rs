@@ -84,28 +84,6 @@ impl App {
         vec.insert(0, el);
     }
 
-    //cannot move to function, sad
-    // fn handle_main_menu_command(
-    //     &mut self,
-    //     command: MainMenuCommand,
-    //     manager: &ResourceManager,
-    //     spritesheet: &Spritesheet,
-    //     doodads: &Vec<Doodad>,
-    // ) {
-    //     match command {
-    //         MainMenuCommand::Exit => {
-    //             self.exit = true;
-    //         }
-    //         MainMenuCommand::AddDoodad(name) => {
-
-    //             let texture = manager.get_doodad("");
-
-    //             doodads.push(Doodad::new(texture, 100, 100, 10));
-    //         }
-    //         _ => {}
-    //     }
-    // }
-
     pub fn run(&mut self) {
         let width = self.config.read("width").parse::<u32>().unwrap();
         let height = self.config.read("height").parse::<u32>().unwrap();
@@ -156,10 +134,31 @@ impl App {
 
         let mut manager = ResourceManager::new(&texture_creator);
 
-        let texture = manager.get_spritesheet("dummy.png");
+        //defaults
+        let default_x = self
+            .config
+            .read("starting_x_position")
+            .parse::<i32>()
+            .unwrap();
+        let default_y = self
+            .config
+            .read("starting_y_position")
+            .parse::<i32>()
+            .unwrap();
+        let default_frames = self
+            .config
+            .read("starting_frames")
+            .parse::<usize>()
+            .unwrap();
+        let default_name = self.config.read("starting_filename") + ".png";
 
-        let mut spritesheet = Spritesheet::new(texture, 100, 100, 1); //TODO: parametrize
-        self.main_ui.reset(1);
+        let mut spritesheet = Spritesheet::new(
+            manager.get_spritesheet(&default_name),
+            default_x,
+            default_y,
+            default_frames,
+        );
+        self.main_ui.reset(default_frames as i32);
 
         let mut doodads: Vec<Doodad> = Vec::new();
 
@@ -376,10 +375,13 @@ impl App {
                 MainMenuCommand::New => {
                     doodads.clear();
 
-                    spritesheet =
-                        Spritesheet::new(manager.get_spritesheet(&("dummy.png")), 100, 100, 1);
-
-                    self.main_ui.reset(1);
+                    spritesheet = Spritesheet::new(
+                        manager.get_spritesheet(&default_name),
+                        default_x,
+                        default_y,
+                        default_frames,
+                    );
+                    self.main_ui.reset(default_frames as i32);
                 }
                 MainMenuCommand::Exit => {
                     self.exit = true;
@@ -387,7 +389,7 @@ impl App {
                 MainMenuCommand::AddDoodad(name) => {
                     let texture = manager.get_doodad(&(name + ".png"));
 
-                    doodads.push(Doodad::new(texture, 100, 100, 10));
+                    doodads.push(Doodad::new(texture, 100, 100, spritesheet.get_frames_amount() as u32));
                 }
                 MainMenuCommand::ClearDoodads => {
                     doodads.clear();
@@ -399,6 +401,10 @@ impl App {
 
                     spritesheet =
                         Spritesheet::new(texture, position.x, position.y, frames as usize);
+
+                    for doodad in &mut doodads{
+                        doodad.set_frame(frames.into());
+                    }
 
                     self.main_ui.reset(frames as i32);
                 }

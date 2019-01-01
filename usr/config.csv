@@ -2,3 +2,7 @@ Setting;Value;Comment
 width;1000;
 height;700;
 background_color;100,100,100;grey
+starting_x_position;100;
+starting_y_position;100;
+starting_filename;dummy;
+starting_frames;1;for panic choose 0
