@@ -6,3 +6,4 @@ starting_x_position;100;
 starting_y_position;100;
 starting_filename;dummy;
 starting_frames;1;for panic choose 0
+starting_frametime;1000;

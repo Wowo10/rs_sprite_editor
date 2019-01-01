@@ -285,18 +285,18 @@ impl App {
                 }
             }
 
+            let frame = self.main_ui.get_frame();
+
+            for fragment in &mut doodads {
+                fragment.set_frame(frame);
+            }
+            spritesheet.set_frame(frame);
+
             let check = self.main_ui.update_check();
 
             if check.0 && doodads.len() != 0 {
                 doodads[self.active_doodad].set_rotation(self.main_ui.get_rotation().into());
                 doodads[self.active_doodad].set_scale(self.main_ui.get_scale());
-
-                let frame = self.main_ui.get_frame();
-
-                for fragment in &mut doodads {
-                    fragment.set_frame(frame);
-                }
-                spritesheet.set_frame(frame);
             }
 
             if check.1 {
@@ -356,8 +356,8 @@ impl App {
                     &mut canvas,
                     rotate_rectangle(
                         doodads[self.active_doodad].real_position(),
-                        self.main_ui.get_rotation(),
-                        self.main_ui.get_scale(),
+                        doodads[self.active_doodad].get_rotation() as f32,
+                        doodads[self.active_doodad].get_scale(),
                     ),
                 );
             }
@@ -389,7 +389,12 @@ impl App {
                 MainMenuCommand::AddDoodad(name) => {
                     let texture = manager.get_doodad(&(name + ".png"));
 
-                    doodads.push(Doodad::new(texture, 100, 100, spritesheet.get_frames_amount() as u32));
+                    doodads.push(Doodad::new(
+                        texture,
+                        100,
+                        100,
+                        spritesheet.get_frames_amount() as u32,
+                    ));
                 }
                 MainMenuCommand::ClearDoodads => {
                     doodads.clear();
@@ -402,7 +407,7 @@ impl App {
                     spritesheet =
                         Spritesheet::new(texture, position.x, position.y, frames as usize);
 
-                    for doodad in &mut doodads{
+                    for doodad in &mut doodads {
                         doodad.set_frames_amount(frames.into());
                     }
 

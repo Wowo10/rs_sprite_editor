@@ -16,7 +16,6 @@ pub struct MainInterface {
     play: bool,
 
     frame_timer: Timer,
-    frame_time: i32,
     frames_per_anim: i32,
     framerate: i32,
 
@@ -33,7 +32,6 @@ impl MainInterface {
             play: false,
 
             frame_timer: Timer::create(),
-            frame_time: 1000,
             frames_per_anim: 6,
             framerate: 1000,
 
@@ -43,16 +41,17 @@ impl MainInterface {
     }
 
     pub fn frame(&mut self) -> i32 {
-        self.current_frame =
-            (self.frame_timer.get_elapsed() / self.frame_time as u64) as i32 % self.frames_per_anim;
+        if self.frame_timer.did_pass(self.framerate as u64){
+            self.current_frame = (self.current_frame+1)% self.frames_per_anim;
+            self.frame_timer.reset();
+        }
 
         self.current_frame
     }
 
-    pub fn change_settings(&mut self, scale: f32, rotation: f32, framerate: i32) {
+    pub fn change_settings(&mut self, scale: f32, rotation: f32) {
         self.scale = scale;
         self.rotation = rotation;
-        self.framerate = framerate;
     }
 
     pub fn reset(&mut self, frames: i32) {
@@ -97,7 +96,7 @@ impl UserInterface for MainInterface {
             .position((400.0, 140.0), ImGuiCond::Once)
             .build(|| {
                 if ui
-                    .slider_float(im_str!("scale"), &mut self.scale, 0.5, 6.0)
+                    .slider_float(im_str!("scale"), &mut self.scale, 0.5, 6.0) //needs parametrization
                     .build()
                 {
                     self.did_change = true;
@@ -114,7 +113,7 @@ impl UserInterface for MainInterface {
 
                 ui.separator();
 
-                let mouse_pos = ui.imgui().mouse_pos();
+                let mouse_pos = ui.imgui().mouse_pos(); //Debug Purposes
                 ui.text(im_str!(
                     "Mouse Position: ({:.1},{:.1})",
                     mouse_pos.0,
@@ -130,7 +129,9 @@ impl UserInterface for MainInterface {
                     )
                     .build()
                 {
+                    self.frame_timer.reset();
                     self.did_change = true;
+                    self.play = false;
                 }
 
                 if ui
@@ -138,6 +139,7 @@ impl UserInterface for MainInterface {
                     .chars_decimal(true)
                     .build()
                 {
+                    self.frame_timer.reset(); //TODO: Check if necessary
                     self.did_change = true;
                 }
 
