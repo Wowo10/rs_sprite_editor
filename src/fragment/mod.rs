@@ -1,5 +1,8 @@
+use sdl2::render::Texture;
+use std::rc::Rc;
+
 pub struct Spritesheet<'a> {
-    texture: &'a sdl2::render::Texture<'a>,
+    texture: Rc<Texture<'a>>,
     source_rect: sdl2::rect::Rect,
     frame_width: i32,
     position: sdl2::rect::Rect,
@@ -14,7 +17,7 @@ pub struct Spritesheet<'a> {
 
 impl<'a> Spritesheet<'a> {
     pub fn new(
-        texture: &'a sdl2::render::Texture<'a>,
+        texture: Rc<Texture<'a>>,
         x_pos: i32,
         y_pos: i32,
         frame_count: usize,
@@ -38,25 +41,25 @@ impl<'a> Spritesheet<'a> {
         }
     }
 
-    pub fn _load(texture: &'a sdl2::render::Texture<'a>, frame_count: usize) -> Self {
-        let width = texture.query().width;
-        let heigth = texture.query().height;
+    // pub fn _load(texture: &'a sdl2::render::Texture<'a>, frame_count: usize) -> Self {
+    //     let width = texture.query().width;
+    //     let heigth = texture.query().height;
 
-        Spritesheet {
-            texture: texture,
-            source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),
-            frame_width: width as i32,
+    //     Spritesheet {
+    //         texture: texture,
+    //         source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),
+    //         frame_width: width as i32,
 
-            position: sdl2::rect::Rect::new(0, 0, width, heigth),
+    //         position: sdl2::rect::Rect::new(0, 0, width, heigth),
 
-            scale: 1.0,
-            rotation: 0.0,
+    //         scale: 1.0,
+    //         rotation: 0.0,
 
-            frame_count: frame_count,
+    //         frame_count: frame_count,
 
-            current: 0,
-        }
-    }
+    //         current: 0,
+    //     }
+    // }
 
     fn update_frame(&mut self) {
         self.source_rect
@@ -75,7 +78,7 @@ impl<'a> Spritesheet<'a> {
 }
 
 pub struct Doodad<'a> {
-    texture: &'a sdl2::render::Texture<'a>,
+    texture: Rc<Texture<'a>>,
     source_rect: sdl2::rect::Rect,
     positions: Vec<sdl2::rect::Rect>,
 
@@ -87,7 +90,7 @@ pub struct Doodad<'a> {
 
 impl<'a> Doodad<'a> {
     pub fn new(
-        texture: &'a sdl2::render::Texture<'a>,
+        texture: Rc<Texture<'a>>,
         x_pos: i32,
         y_pos: i32,
         frame_count: u32,
@@ -118,25 +121,25 @@ impl<'a> Doodad<'a> {
         }
     }
 
-    pub fn _load(
-        texture: &'a sdl2::render::Texture<'a>,
-        positions: Vec<sdl2::rect::Rect>,
-        rotations: Vec<f64>,
-    ) -> Self {
-        let width = texture.query().width;
-        let heigth = texture.query().height;
+    // pub fn _load(
+    //     texture: &'a sdl2::render::Texture<'a>,
+    //     positions: Vec<sdl2::rect::Rect>,
+    //     rotations: Vec<f64>,
+    // ) -> Self {
+    //     let width = texture.query().width;
+    //     let heigth = texture.query().height;
 
-        Doodad {
-            texture: texture,
-            source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),
-            positions: positions,
+    //     Doodad {
+    //         texture: texture,
+    //         source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),
+    //         positions: positions,
 
-            scale: 1.0,
-            rotations: rotations,
+    //         scale: 1.0,
+    //         rotations: rotations,
 
-            current: 0,
-        }
-    }
+    //         current: 0,
+    //     }
+    // }
 
     pub fn serialize(&self, origin: sdl2::rect::Point) -> String {
         let mut temp = String::new();

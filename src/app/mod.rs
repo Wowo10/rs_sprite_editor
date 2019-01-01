@@ -91,6 +91,7 @@ impl App {
     pub fn run(&mut self) {
         let width = self.config.read("width").parse::<u32>().unwrap();
         let height = self.config.read("height").parse::<u32>().unwrap();
+
         let window = match self
             .video
             .window("rust-imgui-sdl2 demo", width, height)
@@ -137,10 +138,9 @@ impl App {
 
         let mut manager = ResourceManager::new(&texture_creator);
 
-        let mut texture = manager.get_spritesheet("animbg.png");
-        texture = manager.get_spritesheet("anim.png");
+        let texture = manager.get_spritesheet("animbg.png");
 
-        let mut spritesheet = Spritesheet::new(&texture, 400, 20, 6);
+        let mut spritesheet = Spritesheet::new(texture, 400, 20, 6);
 
         let mut doodads: Vec<Doodad> = Vec::new();
 
@@ -304,7 +304,7 @@ impl App {
 
             canvas
                 .copy_ex(
-                    &spritesheet.get_texture(),
+                    spritesheet.get_texture(),
                     Some(spritesheet.get_source_rect()),
                     Some(spritesheet.draw_position()),
                     spritesheet.get_rotation(),
@@ -321,7 +321,7 @@ impl App {
 
                 canvas
                     .copy_ex(
-                        &fragment.get_texture(),
+                        fragment.get_texture(),
                         Some(fragment.get_source_rect()),
                         Some(fragment.draw_position()),
                         fragment.get_rotation(),
