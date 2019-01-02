@@ -314,35 +314,6 @@ impl App {
                 _ => {}
             }
 
-            // let frame = self.main_ui.get_frame();
-
-            // for fragment in &mut doodads {
-            //     fragment.set_frame(frame);
-            // }
-            // spritesheet.set_frame(frame);
-
-            // let check = self.main_ui.update_check();
-
-            // if check.0 && doodads.len() != 0 {
-            //     doodads[self.active_doodad].set_rotation(self.main_ui.get_rotation().into());
-            //     doodads[self.active_doodad].set_scale(self.main_ui.get_scale());
-            // }
-
-            // if check.1 {
-            //     for fragment in &mut doodads {
-            //         fragment.reset_frames();
-            //     }
-            //     spritesheet.reset_frames();
-            // }
-
-            // if self.main_ui.play() && self.frame != self.main_ui.frame() {
-            //     for fragment in &mut doodads {
-            //         fragment.next_frame();
-            //     }
-            //     spritesheet.next_frame();
-            //     self.frame = self.main_ui.frame();
-            // }
-
             canvas.set_draw_color(self.config.read_color("background_color"));
             canvas.clear();
 

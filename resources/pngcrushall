@@ -1,0 +1,5 @@
+#!/bin/bash
+for filename in doodads/*.png; do
+	#echo $filename
+	pngcrush -ow -rem allb -reduce "$filename"   
+done

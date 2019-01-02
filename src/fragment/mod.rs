@@ -247,7 +247,6 @@ impl<'a> Doodad<'a> {
 }
 
 pub trait Fragment<'a> {
-    fn set_position(&mut self, x: i32, y: i32);
     fn draw_position(&self) -> sdl2::rect::Rect;
     fn real_position(&self) -> sdl2::rect::Rect;
     fn change_position(&mut self, diff_x: i32, diff_y: i32);
@@ -261,16 +260,9 @@ pub trait Fragment<'a> {
     fn get_position(&self) -> sdl2::rect::Rect;
 
     fn set_frame(&mut self, frame_number: usize);
-    fn next_frame(&mut self);
-    fn reset_frames(&mut self);
 }
 
 impl<'a> Fragment<'a> for Spritesheet<'a> {
-    fn set_position(&mut self, x: i32, y: i32) {
-        self.position.x = x;
-        self.position.y = y;
-    }
-
     fn draw_position(&self) -> sdl2::rect::Rect {
         let tempx = if self.position.x != 0 {
             self.position.x
@@ -332,23 +324,9 @@ impl<'a> Fragment<'a> for Spritesheet<'a> {
         self.current = frame_number % self.frame_count;
         self.update_frame();
     }
-    fn next_frame(&mut self) {
-        self.current = (self.current + 1) % self.frame_count;
-        self.update_frame();
-    }
-
-    fn reset_frames(&mut self) {
-        self.current = 0;
-        self.update_frame();
-    }
 }
 
 impl<'a> Fragment<'a> for Doodad<'a> {
-    fn set_position(&mut self, x: i32, y: i32) {
-        self.positions[self.current].x = x;
-        self.positions[self.current].y = y;
-    }
-
     fn draw_position(&self) -> sdl2::rect::Rect {
         let tempx = if self.positions[self.current].x != 0 {
             self.positions[self.current].x
@@ -403,12 +381,5 @@ impl<'a> Fragment<'a> for Doodad<'a> {
 
     fn set_frame(&mut self, frame_number: usize) {
         self.current = frame_number % self.positions.len();
-    }
-    fn next_frame(&mut self) {
-        self.current = (self.current + 1) % self.positions.len();
-    }
-
-    fn reset_frames(&mut self) {
-        self.current = 0;
     }
 }
