@@ -5,6 +5,15 @@ use self::timer::*;
 pub mod main_menu;
 pub use self::main_menu::{MainMenuCommand, MainMenuInterface};
 
+#[derive(Clone)]
+pub enum MainInterfaceCommand {
+    None,
+    Play(bool),
+    Scale(f32),
+    Rotate(f32),
+    Frame(i32),
+}
+
 pub trait UserInterface {
     fn draw_window(&mut self, ui: &Ui);
 }
@@ -20,7 +29,8 @@ pub struct MainInterface {
     framerate: i32,
 
     pub did_change: bool,
-    did_change_play: bool,
+
+    command: MainInterfaceCommand,
 }
 
 impl MainInterface {
@@ -36,17 +46,19 @@ impl MainInterface {
             framerate: 1000,
 
             did_change: false,
-            did_change_play: false,
+
+            command: MainInterfaceCommand::None,
         }
     }
 
-    pub fn frame(&mut self) -> i32 {
-        if self.frame_timer.did_pass(self.framerate as u64){
-            self.current_frame = (self.current_frame+1)% self.frames_per_anim;
-            self.frame_timer.reset();
+    pub fn update(&mut self) {
+        if self.play {
+            if self.frame_timer.did_pass(self.framerate as u64) {
+                self.current_frame = (self.current_frame + 1) % self.frames_per_anim;
+                self.frame_timer.reset();
+            }
+            self.command = MainInterfaceCommand::Frame(self.current_frame);
         }
-
-        self.current_frame
     }
 
     pub fn change_settings(&mut self, scale: f32, rotation: f32) {
@@ -60,32 +72,12 @@ impl MainInterface {
         self.current_frame = 0;
         self.frames_per_anim = frames;
     }
+    pub fn check(&mut self) -> MainInterfaceCommand {
+        let command = self.command.clone();
 
-    pub fn update_check(&mut self) -> (bool, bool) {
-        let did_change: (bool, bool) = (self.did_change, self.did_change_play);
+        self.command = MainInterfaceCommand::None;
 
-        if self.did_change {
-            self.did_change = false;
-        }
-
-        if self.did_change_play {
-            self.did_change_play = false;
-        }
-
-        did_change
-    }
-
-    pub fn get_rotation(&self) -> f32 {
-        self.rotation
-    }
-    pub fn get_scale(&self) -> f32 {
-        self.scale
-    }
-    pub fn get_frame(&self) -> usize {
-        self.current_frame as usize
-    }
-    pub fn play(&self) -> bool {
-        self.play
+        command
     }
 }
 
@@ -100,6 +92,7 @@ impl UserInterface for MainInterface {
                     .build()
                 {
                     self.did_change = true;
+                    self.command = MainInterfaceCommand::Scale(self.scale);
                 }
 
                 ui.separator();
@@ -109,6 +102,7 @@ impl UserInterface for MainInterface {
                     .build()
                 {
                     self.did_change = true;
+                    self.command = MainInterfaceCommand::Rotate(self.rotation);
                 }
 
                 ui.separator();
@@ -132,6 +126,7 @@ impl UserInterface for MainInterface {
                     self.frame_timer.reset();
                     self.did_change = true;
                     self.play = false;
+                    self.command = MainInterfaceCommand::Frame(self.current_frame);
                 }
 
                 if ui
@@ -140,13 +135,13 @@ impl UserInterface for MainInterface {
                     .build()
                 {
                     self.frame_timer.reset(); //TODO: Check if necessary
-                    self.did_change = true;
                 }
 
                 if ui.checkbox(im_str!("play"), &mut self.play) {
                     self.frame_timer.reset();
                     self.current_frame = 0;
-                    self.did_change_play = true;
+
+                    self.command = MainInterfaceCommand::Frame(0);
                 }
             });
     }

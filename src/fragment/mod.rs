@@ -2,6 +2,7 @@ use sdl2::render::Texture;
 use std::rc::Rc;
 
 pub struct Spritesheet<'a> {
+    name: String,
     texture: Rc<Texture<'a>>,
     source_rect: sdl2::rect::Rect,
     frame_width: i32,
@@ -17,6 +18,7 @@ pub struct Spritesheet<'a> {
 
 impl<'a> Spritesheet<'a> {
     pub fn new(
+        name: String,
         texture: Rc<Texture<'a>>,
         x_pos: i32,
         y_pos: i32,
@@ -26,6 +28,7 @@ impl<'a> Spritesheet<'a> {
         let heigth = texture.query().height;
 
         Spritesheet {
+            name: name,
             texture: texture,
             source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),
             frame_width: width as i32,
@@ -68,7 +71,7 @@ impl<'a> Spritesheet<'a> {
 
     pub fn serialize(&self) -> String {
         let mut temp = String::new();
-        temp += "filename";
+        temp += &self.name;
         temp += ";";
 
         temp += &self.frame_count.to_string();
@@ -82,6 +85,7 @@ impl<'a> Spritesheet<'a> {
 }
 
 pub struct Doodad<'a> {
+    name: String,
     texture: Rc<Texture<'a>>,
     source_rect: sdl2::rect::Rect,
     positions: Vec<sdl2::rect::Rect>,
@@ -94,6 +98,7 @@ pub struct Doodad<'a> {
 
 impl<'a> Doodad<'a> {
     pub fn new(
+        name: String,
         texture: Rc<Texture<'a>>,
         x_pos: i32,
         y_pos: i32,
@@ -114,6 +119,7 @@ impl<'a> Doodad<'a> {
         }
 
         Doodad {
+            name: name,
             texture: texture,
             source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),
             positions: positions,
@@ -125,13 +131,12 @@ impl<'a> Doodad<'a> {
         }
     }
 
-    pub fn set_frames_amount(&mut self, frames: usize){
-        while frames != self.positions.len(){
+    pub fn set_frames_amount(&mut self, frames: usize) {
+        while frames != self.positions.len() {
             if frames > self.positions.len() {
                 let cloned_first = self.positions.first().cloned().unwrap();
                 self.positions.push(cloned_first);
-            }
-            else{
+            } else {
                 self.positions.pop();
             }
         }
@@ -160,7 +165,7 @@ impl<'a> Doodad<'a> {
     pub fn serialize(&self, origin: sdl2::rect::Point) -> String {
         let mut temp = String::new();
 
-        temp += "filename";
+        temp += &self.name;
         temp += ";";
         for position in &self.positions {
             let temp_point = position.top_left() - origin;
@@ -183,7 +188,7 @@ impl<'a> Doodad<'a> {
     pub fn serialize2(&self, origin: sdl2::rect::Point) -> String {
         let mut temp = String::new();
 
-        temp += "filename";
+        temp += &self.name;
         temp += ";";
         for i in 0..self.positions.len() {
             let temp_point = self.positions[i].top_left() - origin;
@@ -202,7 +207,7 @@ impl<'a> Doodad<'a> {
     pub fn serialize3(&self, origin: sdl2::rect::Point) -> String {
         let mut temp = String::new();
 
-        temp += "filename";
+        temp += &self.name;
         temp += ";";
 
         let mut tempx = String::new();
@@ -291,7 +296,7 @@ impl<'a> Fragment<'a> for Spritesheet<'a> {
     fn real_position(&self) -> sdl2::rect::Rect {
         self.position
     }
-    
+
     fn change_position(&mut self, diff_x: i32, diff_y: i32) {
         if self.position.x > 0 || diff_x > 0 {
             self.position.x += diff_x;

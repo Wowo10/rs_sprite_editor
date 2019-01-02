@@ -153,6 +153,7 @@ impl App {
         let default_name = self.config.read("starting_filename") + ".png";
 
         let mut spritesheet = Spritesheet::new(
+            default_name.clone(),
             manager.get_spritesheet(&default_name),
             default_x,
             default_y,
@@ -236,6 +237,15 @@ impl App {
                             );
                         }
                     }
+                    Event::KeyDown {
+                        keycode: Some(Keycode::W),
+                        ..
+                    } => {
+                        println!("/////////////////////////");
+                        for doodad in &doodads {
+                            println!("{:?}", doodad.get_position());
+                        }
+                    }
                     Event::MouseButtonDown { x, y, .. } => {
                         for i in 0..doodads.len() {
                             //TODO: Add Checking if pixel is not (0,0,0,1)
@@ -285,34 +295,53 @@ impl App {
                 }
             }
 
-            let frame = self.main_ui.get_frame();
+            self.main_ui.update();
 
-            for fragment in &mut doodads {
-                fragment.set_frame(frame);
-            }
-            spritesheet.set_frame(frame);
-
-            let check = self.main_ui.update_check();
-
-            if check.0 && doodads.len() != 0 {
-                doodads[self.active_doodad].set_rotation(self.main_ui.get_rotation().into());
-                doodads[self.active_doodad].set_scale(self.main_ui.get_scale());
-            }
-
-            if check.1 {
-                for fragment in &mut doodads {
-                    fragment.reset_frames();
+            match self.main_ui.check() {
+                MainInterfaceCommand::Scale(scale) => {
+                    doodads[self.active_doodad].set_scale(scale);
                 }
-                spritesheet.reset_frames();
+                MainInterfaceCommand::Rotate(angle) => {
+                    doodads[self.active_doodad].set_rotation(angle.into());
+                }
+                MainInterfaceCommand::Frame(frame) => {
+                    for fragment in &mut doodads {
+                        fragment.set_frame(frame as usize);
+                    }
+                    spritesheet.set_frame(frame as usize);
+                    self.frame = frame;
+                }
+                _ => {}
             }
 
-            if self.main_ui.play() && self.frame != self.main_ui.frame() {
-                for fragment in &mut doodads {
-                    fragment.next_frame();
-                }
-                spritesheet.next_frame();
-                self.frame = self.main_ui.frame();
-            }
+            // let frame = self.main_ui.get_frame();
+
+            // for fragment in &mut doodads {
+            //     fragment.set_frame(frame);
+            // }
+            // spritesheet.set_frame(frame);
+
+            // let check = self.main_ui.update_check();
+
+            // if check.0 && doodads.len() != 0 {
+            //     doodads[self.active_doodad].set_rotation(self.main_ui.get_rotation().into());
+            //     doodads[self.active_doodad].set_scale(self.main_ui.get_scale());
+            // }
+
+            // if check.1 {
+            //     for fragment in &mut doodads {
+            //         fragment.reset_frames();
+            //     }
+            //     spritesheet.reset_frames();
+            // }
+
+            // if self.main_ui.play() && self.frame != self.main_ui.frame() {
+            //     for fragment in &mut doodads {
+            //         fragment.next_frame();
+            //     }
+            //     spritesheet.next_frame();
+            //     self.frame = self.main_ui.frame();
+            // }
 
             canvas.set_draw_color(self.config.read_color("background_color"));
             canvas.clear();
@@ -376,6 +405,7 @@ impl App {
                     doodads.clear();
 
                     spritesheet = Spritesheet::new(
+                        default_name.clone(),
                         manager.get_spritesheet(&default_name),
                         default_x,
                         default_y,
@@ -387,9 +417,12 @@ impl App {
                     self.exit = true;
                 }
                 MainMenuCommand::AddDoodad(name) => {
+                    let name_clone = name.clone();
+
                     let texture = manager.get_doodad(&(name + ".png"));
 
                     doodads.push(Doodad::new(
+                        name_clone,
                         texture,
                         100,
                         100,
@@ -400,12 +433,19 @@ impl App {
                     doodads.clear();
                 }
                 MainMenuCommand::ChangeSpritesheet(name, frames) => {
+                    let name_clone = name.clone();
+
                     let texture = manager.get_spritesheet(&(name + ".png"));
 
                     let position = spritesheet.get_position();
 
-                    spritesheet =
-                        Spritesheet::new(texture, position.x, position.y, frames as usize);
+                    spritesheet = Spritesheet::new(
+                        name_clone,
+                        texture,
+                        position.x,
+                        position.y,
+                        frames as usize,
+                    );
 
                     for doodad in &mut doodads {
                         doodad.set_frames_amount(frames.into());
