@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::prelude::*;
+use std::io::prelude::Seek;
 use std::io::{BufRead, BufReader, SeekFrom};
 
 pub struct Config {

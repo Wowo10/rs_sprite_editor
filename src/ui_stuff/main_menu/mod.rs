@@ -1,5 +1,5 @@
 use file_utils;
-use ui_stuff::*;
+use ui_stuff::{im_str, ImGuiCond, ImGuiSelectableFlags, ImString, ImVec2, Ui, UserInterface};
 
 enum WindowVisible {
     None,
@@ -108,7 +108,6 @@ impl UserInterface for MainMenuInterface {
                 if ui.menu_item(im_str!("Clear Doodads")).build() {
                     self.window = WindowVisible::None;
                     self.command = MainMenuCommand::ClearDoodads;
-                    println!("Clear!");
                     self.reset();
                 }
                 if ui.menu_item(im_str!("Change SpriteSheet")).build() {
@@ -129,7 +128,6 @@ impl UserInterface for MainMenuInterface {
                         ui.separator();
 
                         if ui.button(im_str!("Yes!!"), ImVec2::new(0.0, 0.0)) {
-                            println!("New!");
                             self.window = WindowVisible::None;
                             self.command = MainMenuCommand::New;
                         }
@@ -161,7 +159,6 @@ impl UserInterface for MainMenuInterface {
 
                         if ui.button(im_str!("Load!"), ImVec2::new(0.0, 0.0)) {
                             if self.selected < self.list_directory.len() {
-                                println!("Load: {:?}", self.list_directory[self.selected]);
                                 self.window = WindowVisible::None;
                                 self.command = MainMenuCommand::Load(
                                     self.list_directory[self.selected].to_str().to_owned(),
@@ -197,7 +194,6 @@ impl UserInterface for MainMenuInterface {
 
                         if ui.button(im_str!("Save!"), ImVec2::new(0.0, 0.0)) {
                             if self.text_input != ImString::new("") {
-                                println!("Save: {:?}", self.text_input);
                                 self.window = WindowVisible::None;
                                 self.command =
                                     MainMenuCommand::Save(self.text_input.to_str().to_owned());
@@ -231,10 +227,6 @@ impl UserInterface for MainMenuInterface {
 
                         if ui.button(im_str!("Add!"), ImVec2::new(0.0, 0.0)) {
                             if self.selected < self.list_directory.len() {
-                                println!(
-                                    "Add to: {:?}",
-                                    self.list_directory[self.selected]
-                                );
                                 self.window = WindowVisible::None;
                                 self.command = MainMenuCommand::AddDoodad(
                                     self.list_directory[self.selected].to_str().to_owned(),
@@ -275,10 +267,6 @@ impl UserInterface for MainMenuInterface {
 
                         if ui.button(im_str!("Change!"), ImVec2::new(0.0, 0.0)) {
                             if self.frames_input > 0 && self.frames_input < 127 {
-                                println!(
-                                    "Change to: {:?}, frames: {:?}",
-                                    self.list_directory[self.selected], self.frames_input
-                                );
                                 self.window = WindowVisible::None;
                                 self.command = MainMenuCommand::ChangeSpritesheet(
                                     self.list_directory[self.selected].to_str().to_owned(),

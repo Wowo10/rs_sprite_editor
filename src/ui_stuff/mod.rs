@@ -1,6 +1,6 @@
 use imgui::*;
 pub mod timer;
-use self::timer::*;
+use self::timer::Timer;
 
 pub mod main_menu;
 pub use self::main_menu::{MainMenuCommand, MainMenuInterface};
@@ -72,6 +72,11 @@ impl MainInterface {
         self.current_frame = 0;
         self.frames_per_anim = frames;
     }
+
+    pub fn set_rotation(&mut self, rotation: f32) {
+        self.rotation = rotation;
+    }
+
     pub fn check(&mut self) -> MainInterfaceCommand {
         let command = self.command.clone();
 

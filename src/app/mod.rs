@@ -1,18 +1,14 @@
-use lib::*;
+use lib::ImguiSdl2;
 
 use sdl2::image::{INIT_JPG, INIT_PNG};
 use sdl2::pixels::Color;
 use sdl2::rect::Point;
 
-use fragment::*;
-
+use fragment::{Doodad, Fragment, Spritesheet};
 use mymath::{check_rect2, rotate_rectangle};
-
-use ui_stuff::*;
-
+use ui_stuff::{MainInterface, MainInterfaceCommand, MainMenuCommand, MainMenuInterface, UserInterface};
 use config::Config;
-
-use resource_manager::*;
+use resource_manager::ResourceManager;
 
 pub struct App {
     exit: bool,
@@ -217,7 +213,7 @@ impl App {
                         for doodad in &doodads {
                             println!(
                                 "{}",
-                                doodad.serialize(spritesheet.get_position().top_left())
+                                doodad.serialize(spritesheet.real_position().top_left())
                             );
                         }
                         println!("serialize2");
@@ -225,7 +221,7 @@ impl App {
                         for doodad in &doodads {
                             println!(
                                 "{}",
-                                doodad.serialize2(spritesheet.get_position().top_left())
+                                doodad.serialize2(spritesheet.real_position().top_left())
                             );
                         }
                         println!("serialize3");
@@ -233,23 +229,12 @@ impl App {
                         for doodad in &doodads {
                             println!(
                                 "{}",
-                                doodad.serialize3(spritesheet.get_position().top_left())
+                                doodad.serialize3(spritesheet.real_position().top_left())
                             );
-                        }
-                    }
-                    Event::KeyDown {
-                        keycode: Some(Keycode::W),
-                        ..
-                    } => {
-                        println!("/////////////////////////");
-                        for doodad in &doodads {
-                            println!("{:?}", doodad.get_position());
                         }
                     }
                     Event::MouseButtonDown { x, y, .. } => {
                         for i in 0..doodads.len() {
-                            //TODO: Add Checking if pixel is not (0,0,0,1)
-                            //poor pixel perfect
                             let check = check_rect2(
                                 rotate_rectangle(
                                     doodads[i].real_position(),
@@ -305,11 +290,72 @@ impl App {
                     doodads[self.active_doodad].set_rotation(angle.into());
                 }
                 MainInterfaceCommand::Frame(frame) => {
-                    for fragment in &mut doodads {
-                        fragment.set_frame(frame as usize);
+                    for doodad in &mut doodads {
+                        doodad.set_frame(frame as usize);
                     }
                     spritesheet.set_frame(frame as usize);
                     self.frame = frame;
+
+                    if doodads.len() != 0 {
+                        self.main_ui
+                            .set_rotation(doodads[self.active_doodad].get_rotation() as f32);
+                    }
+                }
+                _ => {}
+            }
+
+            match self.main_menu_ui.check() {
+                MainMenuCommand::New => {
+                    doodads.clear();
+
+                    spritesheet = Spritesheet::new(
+                        default_name.clone(),
+                        manager.get_spritesheet(&default_name),
+                        default_x,
+                        default_y,
+                        default_frames,
+                    );
+                    self.main_ui.reset(default_frames as i32);
+                }
+                MainMenuCommand::Exit => {
+                    self.exit = true;
+                }
+                MainMenuCommand::AddDoodad(name) => {
+                    let name_clone = name.clone();
+
+                    let texture = manager.get_doodad(&(name + ".png"));
+
+                    doodads.push(Doodad::new(
+                        name_clone,
+                        texture,
+                        100,
+                        100,
+                        spritesheet.get_frames_amount() as u32,
+                    ));
+                }
+                MainMenuCommand::ClearDoodads => {
+                    doodads.clear();
+                }
+                MainMenuCommand::ChangeSpritesheet(name, frames) => {
+                    let name_clone = name.clone();
+
+                    let texture = manager.get_spritesheet(&(name + ".png"));
+
+                    let position = spritesheet.real_position();
+
+                    spritesheet = Spritesheet::new(
+                        name_clone,
+                        texture,
+                        position.x,
+                        position.y,
+                        frames as usize,
+                    );
+
+                    for doodad in &mut doodads {
+                        doodad.set_frames_amount(frames.into());
+                    }
+
+                    self.main_ui.reset(frames as i32);
                 }
                 _ => {}
             }
@@ -366,68 +412,6 @@ impl App {
 
             self.main_ui.draw_window(&ui);
             self.main_menu_ui.draw_window(&ui);
-
-            let command = self.main_menu_ui.check();
-
-            // self.handle_main_menu_command(command, &manager, &spritesheet, &doodads);
-
-            match command {
-                MainMenuCommand::New => {
-                    doodads.clear();
-
-                    spritesheet = Spritesheet::new(
-                        default_name.clone(),
-                        manager.get_spritesheet(&default_name),
-                        default_x,
-                        default_y,
-                        default_frames,
-                    );
-                    self.main_ui.reset(default_frames as i32);
-                }
-                MainMenuCommand::Exit => {
-                    self.exit = true;
-                }
-                MainMenuCommand::AddDoodad(name) => {
-                    let name_clone = name.clone();
-
-                    let texture = manager.get_doodad(&(name + ".png"));
-
-                    doodads.push(Doodad::new(
-                        name_clone,
-                        texture,
-                        100,
-                        100,
-                        spritesheet.get_frames_amount() as u32,
-                    ));
-                }
-                MainMenuCommand::ClearDoodads => {
-                    doodads.clear();
-                }
-                MainMenuCommand::ChangeSpritesheet(name, frames) => {
-                    let name_clone = name.clone();
-
-                    let texture = manager.get_spritesheet(&(name + ".png"));
-
-                    let position = spritesheet.get_position();
-
-                    spritesheet = Spritesheet::new(
-                        name_clone,
-                        texture,
-                        position.x,
-                        position.y,
-                        frames as usize,
-                    );
-
-                    for doodad in &mut doodads {
-                        doodad.set_frames_amount(frames.into());
-                    }
-
-                    self.main_ui.reset(frames as i32);
-                }
-                _ => {}
-            }
-
-            ui.show_demo_window(&mut true);
 
             canvas.window_mut().gl_make_current(&gl_context).unwrap();
             imgui_renderer.render(ui);

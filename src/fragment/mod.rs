@@ -257,7 +257,6 @@ pub trait Fragment<'a> {
     fn get_source_rect(&self) -> sdl2::rect::Rect;
     fn get_rotation(&self) -> f64;
     fn get_scale(&self) -> f32;
-    fn get_position(&self) -> sdl2::rect::Rect;
 
     fn set_frame(&mut self, frame_number: usize);
 }
@@ -316,9 +315,6 @@ impl<'a> Fragment<'a> for Spritesheet<'a> {
     fn get_scale(&self) -> f32 {
         self.scale
     }
-    fn get_position(&self) -> sdl2::rect::Rect {
-        self.position
-    }
 
     fn set_frame(&mut self, frame_number: usize) {
         self.current = frame_number % self.frame_count;
@@ -374,9 +370,6 @@ impl<'a> Fragment<'a> for Doodad<'a> {
     }
     fn get_scale(&self) -> f32 {
         self.scale
-    }
-    fn get_position(&self) -> sdl2::rect::Rect {
-        self.positions[self.current]
     }
 
     fn set_frame(&mut self, frame_number: usize) {

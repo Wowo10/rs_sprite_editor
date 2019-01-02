@@ -1,27 +1,5 @@
 use sdl2::rect::Point;
 
-// fn vector_from_to(from: Point, to: Point) -> Point {
-//     Point::new(to.x - from.x, to.y - from.y)
-// }
-
-// fn dot_product(first: Point, second: Point) -> i32 {
-//     first.x * second.x + first.y * second.y
-// }
-
-// fn sign(integer: i32) -> i32 {
-//     if integer > 0 {
-//         1
-//     } else if integer < 0 {
-//         -1
-//     } else {
-//         0
-//     }
-// }
-
-// fn different_signs(dot_first: i32, dot_second: i32) -> bool {
-//     sign(dot_first) != sign(dot_second)
-// }
-
 fn on_segment(p: Point, q: Point, r: Point) -> bool {
     (q.x <= std::cmp::max(p.x, r.x)
         && q.x >= std::cmp::min(p.x, r.x)
