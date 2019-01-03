@@ -147,11 +147,12 @@ impl App {
             .read("starting_frames")
             .parse::<usize>()
             .unwrap();
-        let default_name = self.config.read("starting_filename") + ".png";
+        let default_name = self.config.read("starting_filename");
+        let default_filename = default_name.clone() + ".png";
 
         let mut spritesheet = Spritesheet::new(
             default_name.clone(),
-            manager.get_spritesheet(&default_name),
+            manager.get_spritesheet(&default_filename),
             default_x,
             default_y,
             default_frames,
@@ -293,7 +294,7 @@ impl App {
 
                     spritesheet = Spritesheet::new(
                         default_name.clone(),
-                        manager.get_spritesheet(&default_name),
+                        manager.get_spritesheet(&default_filename),
                         default_x,
                         default_y,
                         default_frames,
