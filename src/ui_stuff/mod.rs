@@ -119,13 +119,6 @@ impl UserInterface for MainInterface {
 
                 ui.separator();
 
-                let mouse_pos = ui.imgui().mouse_pos(); //Debug Purposes
-                ui.text(im_str!(
-                    "Mouse Position: ({:.1},{:.1})",
-                    mouse_pos.0,
-                    mouse_pos.1
-                ));
-
                 if ui
                     .slider_int(
                         im_str!("Frame:"),

@@ -50,12 +50,6 @@ pub fn load_file_by_lines(name: String) -> Vec<String> {
     result
 }
 
-pub fn split_doodad(data: String) -> [String; 2] {
-    let temp: Vec<String> = data.split(';').map(String::from).collect();
-
-    [temp[0].clone(), temp[1].clone()]
-}
-
 pub fn split_line(data: &String, pattern: &str) -> Vec<String> {
     data.split(pattern).map(String::from).collect()
 }
