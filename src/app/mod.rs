@@ -217,22 +217,6 @@ impl App {
                                 doodad.serialize(spritesheet.real_position().top_left())
                             );
                         }
-                        // println!("serialize2");
-                        // println!("{}", spritesheet.serialize());
-                        // for doodad in &doodads {
-                        //     println!(
-                        //         "{}",
-                        //         doodad.serialize2(spritesheet.real_position().top_left())
-                        //     );
-                        // }
-                        // println!("serialize3");
-                        // println!("{}", spritesheet.serialize());
-                        // for doodad in &doodads {
-                        //     println!(
-                        //         "{}",
-                        //         doodad.serialize3(spritesheet.real_position().top_left())
-                        //     );
-                        // }
                     }
                     Event::MouseButtonDown { x, y, .. } => {
                         for i in 0..doodads.len() {
@@ -345,22 +329,46 @@ impl App {
                         default_y,
                         frames,
                     );
-                    
+
                     self.main_ui.set_framerate(split[2].parse::<i32>().unwrap());
 
                     self.main_ui.reset(frames as i32);
+                    doodads.clear();
 
-                    for line in lines.iter().skip(1){
-                        println!("{}", line);
+                    for line in lines.iter().skip(1) {
+                        let split = file_utils::split_line(line, ";"); //name;scale;posx,posy,rot/...
 
-                        let split = file_utils::split_line(line, ";");//name;scale;pos_x,pos_y,rot/...
+                        let texture = manager.get_doodad(&(split[0].clone() + ".png"));
+                        let width = texture.query().width;
+                        let height = texture.query().height;
 
-                        let doodad = Doodad::new(
+                        let mut pos_vec: Vec<sdl2::rect::Rect> = Vec::new();
+                        let mut rot_vec: Vec<f64> = Vec::new();
+
+                        let split_positions = file_utils::split_line(&split[2], "/"); //data/data/data
+
+                        let split_positions: Vec<&String> = split_positions
+                            .iter()
+                            .filter(|position| position.len() != 0)
+                            .collect();
+
+                        for split_position in split_positions {
+                            let pos_data = file_utils::split_line(&split_position, ","); //posx,posy,rot
+
+                            let temp_x = default_x + pos_data[0].parse::<i32>().unwrap();
+                            let temp_y = default_y + pos_data[1].parse::<i32>().unwrap();
+                            let temp_rot = pos_data[2].parse::<f64>().unwrap();
+
+                            pos_vec.push(sdl2::rect::Rect::new(temp_x, temp_y, width, height));
+                            rot_vec.push(temp_rot);
+                        }
+
+                        let doodad = Doodad::load(
                             split[0].clone(),
-                            manager.get_doodad(&(split[0].clone() + ".png")),
-                            default_x,
-                            default_y,
-                            frames as u32
+                            texture,
+                            pos_vec,
+                            rot_vec,
+                            split[1].parse::<f32>().unwrap(),
                         );
 
                         doodads.push(doodad);
