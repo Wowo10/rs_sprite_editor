@@ -4,11 +4,15 @@ use sdl2::image::{INIT_JPG, INIT_PNG};
 use sdl2::pixels::Color;
 use sdl2::rect::Point;
 
+use config::Config;
 use fragment::{Doodad, Fragment, Spritesheet};
 use mymath::{check_rect2, rotate_rectangle};
-use ui_stuff::{MainInterface, MainInterfaceCommand, MainMenuCommand, MainMenuInterface, UserInterface};
-use config::Config;
 use resource_manager::ResourceManager;
+use ui_stuff::{
+    MainInterface, MainInterfaceCommand, MainMenuCommand, MainMenuInterface, UserInterface,
+};
+
+use file_utils;
 
 pub struct App {
     exit: bool,
@@ -316,6 +320,22 @@ impl App {
                         default_frames,
                     );
                     self.main_ui.reset(default_frames as i32);
+                }
+                MainMenuCommand::Save(path) => {
+                    let mut temp_string = String::new();
+
+                    temp_string += &spritesheet.serialize();
+                    temp_string += &(self.main_ui.get_framerate().to_string());
+                    
+                    for doodad in &doodads{
+                        temp_string += "\n";
+                        temp_string += &doodad.serialize(spritesheet.real_position().top_left());
+                    }
+
+                    file_utils::save_template(path, temp_string);
+                }
+                MainMenuCommand::Load(path) => {
+                    file_utils::save_template(path, "load".to_owned());
                 }
                 MainMenuCommand::Exit => {
                     self.exit = true;

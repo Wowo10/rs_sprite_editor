@@ -75,6 +75,7 @@ impl<'a> Spritesheet<'a> {
         temp += ";";
 
         temp += &self.frame_count.to_string();
+        temp += ";"; //fetch framerate
 
         temp
     }

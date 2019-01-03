@@ -77,6 +77,10 @@ impl MainInterface {
         self.rotation = rotation;
     }
 
+    pub fn get_framerate(&self) -> i32 {
+        self.framerate
+    }
+
     pub fn check(&mut self) -> MainInterfaceCommand {
         let command = self.command.clone();
 
