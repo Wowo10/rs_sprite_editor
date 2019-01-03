@@ -6,7 +6,7 @@ use sdl2::rect::Point;
 
 use config::Config;
 use fragment::{Doodad, Fragment, Spritesheet};
-use mymath::{check_rect2, rotate_rectangle};
+use mymath::{check_rect, rotate_rectangle};
 use resource_manager::ResourceManager;
 use ui_stuff::{
     MainInterface, MainInterfaceCommand, MainMenuCommand, MainMenuInterface, UserInterface,
@@ -23,7 +23,6 @@ pub struct App {
     main_ui: MainInterface,
     main_menu_ui: MainMenuInterface,
 
-    active_doodad: usize, //temporary always 0
     holding_button: bool,
     holding_index: i32,
     frame: i32,
@@ -59,7 +58,6 @@ impl App {
             main_ui: MainInterface::new(),
             main_menu_ui: MainMenuInterface::new(),
 
-            active_doodad: 0,
             holding_button: false,
             holding_index: -1,
             frame: 0,
@@ -134,7 +132,6 @@ impl App {
 
         let mut manager = ResourceManager::new(&texture_creator);
 
-        //defaults
         let default_x = self
             .config
             .read("starting_x_position")
@@ -220,26 +217,26 @@ impl App {
                                 doodad.serialize(spritesheet.real_position().top_left())
                             );
                         }
-                        println!("serialize2");
-                        println!("{}", spritesheet.serialize());
-                        for doodad in &doodads {
-                            println!(
-                                "{}",
-                                doodad.serialize2(spritesheet.real_position().top_left())
-                            );
-                        }
-                        println!("serialize3");
-                        println!("{}", spritesheet.serialize());
-                        for doodad in &doodads {
-                            println!(
-                                "{}",
-                                doodad.serialize3(spritesheet.real_position().top_left())
-                            );
-                        }
+                        // println!("serialize2");
+                        // println!("{}", spritesheet.serialize());
+                        // for doodad in &doodads {
+                        //     println!(
+                        //         "{}",
+                        //         doodad.serialize2(spritesheet.real_position().top_left())
+                        //     );
+                        // }
+                        // println!("serialize3");
+                        // println!("{}", spritesheet.serialize());
+                        // for doodad in &doodads {
+                        //     println!(
+                        //         "{}",
+                        //         doodad.serialize3(spritesheet.real_position().top_left())
+                        //     );
+                        // }
                     }
                     Event::MouseButtonDown { x, y, .. } => {
                         for i in 0..doodads.len() {
-                            let check = check_rect2(
+                            let check = check_rect(
                                 rotate_rectangle(
                                     doodads[i].real_position(),
                                     doodads[i].get_rotation() as f32,
@@ -249,7 +246,6 @@ impl App {
                             );
 
                             if check {
-                                self.active_doodad = 0; //i; temporary -> may be better to add some new menu
                                 self.main_ui.change_settings(
                                     doodads[i].get_scale(),
                                     doodads[i].get_rotation() as f32,
@@ -288,10 +284,10 @@ impl App {
 
             match self.main_ui.check() {
                 MainInterfaceCommand::Scale(scale) => {
-                    doodads[self.active_doodad].set_scale(scale);
+                    doodads.first_mut().unwrap().set_scale(scale);
                 }
                 MainInterfaceCommand::Rotate(angle) => {
-                    doodads[self.active_doodad].set_rotation(angle.into());
+                    doodads.first_mut().unwrap().set_rotation(angle.into());
                 }
                 MainInterfaceCommand::Frame(frame) => {
                     for doodad in &mut doodads {
@@ -302,7 +298,7 @@ impl App {
 
                     if doodads.len() != 0 {
                         self.main_ui
-                            .set_rotation(doodads[self.active_doodad].get_rotation() as f32);
+                            .set_rotation(doodads.first().unwrap().get_rotation() as f32);
                     }
                 }
                 _ => {}
@@ -326,8 +322,8 @@ impl App {
 
                     temp_string += &spritesheet.serialize();
                     temp_string += &(self.main_ui.get_framerate().to_string());
-                    
-                    for doodad in &doodads{
+
+                    for doodad in &doodads {
                         temp_string += "\n";
                         temp_string += &doodad.serialize(spritesheet.real_position().top_left());
                     }
@@ -335,7 +331,11 @@ impl App {
                     file_utils::save_template(path, temp_string);
                 }
                 MainMenuCommand::Load(path) => {
-                    file_utils::save_template(path, "load".to_owned());
+                    let lines = file_utils::load_file_by_lines(path);
+
+                    for line in lines{
+                        println!("{}", line);
+                    }
                 }
                 MainMenuCommand::Exit => {
                     self.exit = true;
@@ -418,12 +418,14 @@ impl App {
             }
 
             if doodads.len() != 0 {
+                let first = doodads.first().unwrap();
+
                 App::draw_rectangle_around_active(
                     &mut canvas,
                     rotate_rectangle(
-                        doodads[self.active_doodad].real_position(),
-                        doodads[self.active_doodad].get_rotation() as f32,
-                        doodads[self.active_doodad].get_scale(),
+                        first.real_position(),
+                        first.get_rotation() as f32,
+                        first.get_scale(),
                     ),
                 );
             }

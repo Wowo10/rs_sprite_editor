@@ -24,28 +24,34 @@ pub fn get_imgui_directory(path: &'static str) -> Vec<imgui::ImString> {
 }
 
 pub fn save_template(name: String, data: String) {
-    
-    //let dupa=OsStr::new(&name);
-
     let mut path = String::from("resources/definitions/");
     path += &name;
     path += ".csv";
 
-    //let path = Path::new(&(("resources/definitions/".to_string() + &name) + ".csv"));
-    let path = Path::new(&path);//(&(("resources/definitions/".to_string() + &name) + ".csv"));
+    let path = Path::new(&path);
 
-    // let mut file = OpenOptions::new().write(true).create(!path.exists()).open(path).unwrap();
-
-    // file.write("");
-
-    fs::write(path, data).expect("bug");
-
-    println!(
-        "{}, {:?}",
-        path.exists(),
-        path
-    );
+    fs::write(path, data).expect("Failed to initialise file write.");
 }
-// pub fn save_template(path: &'static str) {
-//     println!("{}", Path::new(path).exists());
-// }
+
+pub fn load_file_by_lines(name: String) -> Vec<String> {
+    let mut path = String::from("resources/definitions/");
+    path += &name;
+    path += ".csv";
+
+    let path = Path::new(&path);
+
+    let buffer = fs::read_to_string(path).expect("Failed to initialise file read.");
+
+    let mut result = Vec::new();
+    for line in buffer.lines() {
+        result.push(line.to_owned());
+    }
+
+    result
+}
+
+pub fn split_doodad(data: String) -> [String; 2] {
+    let temp: Vec<String> = data.split(';').map(String::from).collect();
+
+    [temp[0].clone(), temp[1].clone()]
+}

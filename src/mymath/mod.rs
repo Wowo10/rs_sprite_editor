@@ -48,19 +48,10 @@ fn do_intersect(p1: Point, q1: Point, p2: Point) -> bool {
         return true;
     }
 
-    return false; // Doesn't fall in any of the above cases
+    return false; // If doesn't fall in any of the above cases
 }
 
-// pub fn check_rect(rect: &sdl2::rect::Rect, point: Point) -> bool {
-//     let counter: i8 = do_intersect(rect.top_left(), rect.top_right(), point) as i8
-//         + do_intersect(rect.top_right(), rect.bottom_right(), point) as i8
-//         + do_intersect(rect.bottom_right(), rect.bottom_left(), point) as i8
-//         + do_intersect(rect.bottom_left(), rect.top_left(), point) as i8;
-
-//     counter % 2 == 1
-// }
-
-pub fn check_rect2(rect: [Point; 4], point: Point) -> bool {
+pub fn check_rect(rect: [Point; 4], point: Point) -> bool {
     let counter: i8 = do_intersect(rect[0], rect[1], point) as i8
         + do_intersect(rect[1], rect[2], point) as i8
         + do_intersect(rect[2], rect[3], point) as i8
@@ -119,5 +110,5 @@ pub fn rotate_rectangle(active_rect: sdl2::rect::Rect, rotation: f32, scale: f32
         rotation,
     );
 
-    [top_left, top_right, bottom_right, bottom_left] //order is very important]
+    [top_left, top_right, bottom_right, bottom_left] //order is very important
 }

@@ -163,77 +163,82 @@ impl<'a> Doodad<'a> {
     //     }
     // }
 
+    // pub fn serialize(&self, origin: sdl2::rect::Point) -> String {
+    //     let mut temp = String::new();
+
+    //     temp += &self.name;
+    //     temp += ";";
+    //     temp += &self.scale.to_string();
+    //     temp += ";";
+    //     for position in &self.positions {
+    //         let temp_point = position.top_left() - origin;
+    //         temp += "";
+    //         temp += &temp_point.x.to_string();
+    //         temp += ".";
+    //         temp += &temp_point.y.to_string();
+    //         temp += ",";
+    //     }
+
+    //     temp += ";";
+    //     for rotation in &self.rotations {
+    //         temp += &rotation.to_string();
+    //         temp += ",";
+    //     }
+
+    //     temp
+    // }
+
     pub fn serialize(&self, origin: sdl2::rect::Point) -> String {
         let mut temp = String::new();
 
         temp += &self.name;
         temp += ";";
-        for position in &self.positions {
-            let temp_point = position.top_left() - origin;
-            temp += "(";
-            temp += &temp_point.x.to_string();
-            temp += ",";
-            temp += &temp_point.y.to_string();
-            temp += ").";
-        }
-
-        temp += ";";
-        for rotation in &self.rotations {
-            temp += &rotation.to_string();
-            temp += ".";
-        }
-
-        temp
-    }
-
-    pub fn serialize2(&self, origin: sdl2::rect::Point) -> String {
-        let mut temp = String::new();
-
-        temp += &self.name;
+        temp += &self.scale.to_string();
         temp += ";";
         for i in 0..self.positions.len() {
             let temp_point = self.positions[i].top_left() - origin;
-            temp += "[";
             temp += &temp_point.x.to_string();
             temp += ",";
             temp += &temp_point.y.to_string();
             temp += ",";
             temp += &self.rotations[i].to_string();
-            temp += "].";
+            temp += "/";
         }
 
         temp
     }
 
-    pub fn serialize3(&self, origin: sdl2::rect::Point) -> String {
-        let mut temp = String::new();
+    // pub fn serialize3(&self, origin: sdl2::rect::Point) -> String {
+    //     let mut temp = String::new();
 
-        temp += &self.name;
-        temp += ";";
+    //     temp += &self.name;
+    //     temp += ";";
+    //     temp += &self.scale.to_string();
+    //     temp += ";";
 
-        let mut tempx = String::new();
-        let mut tempy = String::new();
-        for position in &self.positions {
-            let temp_point = position.top_left() - origin;
+    //     let mut tempx = String::new();
+    //     let mut tempy = String::new();
+    //     for position in &self.positions {
+    //         let temp_point = position.top_left() - origin;
 
-            tempx += &temp_point.x.to_string();
-            tempx += ".";
-            tempy += &temp_point.y.to_string();
-            tempy += ".";
-        }
+    //         tempx += &temp_point.x.to_string();
+    //         tempx += ",";
+    //         tempy += &temp_point.y.to_string();
+    //         tempy += ",";
+    //     }
 
-        temp += &tempx.to_string();
-        temp += ";";
-        temp += &tempy.to_string();
+    //     temp += &tempx.to_string();
+    //     temp += ";";
+    //     temp += &tempy.to_string();
 
-        temp += ";";
-        for rotation in &self.rotations {
-            temp += &rotation.to_string();
-            temp += ".";
-        }
+    //     temp += ";";
+    //     for rotation in &self.rotations {
+    //         temp += &rotation.to_string();
+    //         temp += ",";
+    //     }
 
-        temp
-    }
+    //     temp
+    // }
 
     pub fn change_all_positions(&mut self, diff_x: i32, diff_y: i32) {
         for position in &mut self.positions {
