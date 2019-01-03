@@ -295,7 +295,6 @@ impl App {
                     }
                     spritesheet.set_frame(frame as usize);
                     self.frame = frame;
-
                     if doodads.len() != 0 {
                         self.main_ui
                             .set_rotation(doodads.first().unwrap().get_rotation() as f32);
