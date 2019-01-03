@@ -8,7 +8,7 @@ pub use self::main_menu::{MainMenuCommand, MainMenuInterface};
 #[derive(Clone)]
 pub enum MainInterfaceCommand {
     None,
-    Play(bool),
+    //Play(bool),
     Scale(f32),
     Rotate(f32),
     Frame(i32),
