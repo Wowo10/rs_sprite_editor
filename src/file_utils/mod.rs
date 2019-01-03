@@ -55,3 +55,7 @@ pub fn split_doodad(data: String) -> [String; 2] {
 
     [temp[0].clone(), temp[1].clone()]
 }
+
+pub fn split_line(data: &String, pattern: &str) -> Vec<String> {
+    data.split(pattern).map(String::from).collect()
+}

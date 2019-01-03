@@ -8,7 +8,6 @@ pub use self::main_menu::{MainMenuCommand, MainMenuInterface};
 #[derive(Clone)]
 pub enum MainInterfaceCommand {
     None,
-    //Play(bool),
     Scale(f32),
     Rotate(f32),
     Frame(i32),
@@ -75,6 +74,10 @@ impl MainInterface {
 
     pub fn set_rotation(&mut self, rotation: f32) {
         self.rotation = rotation;
+    }
+
+    pub fn set_framerate(&mut self, framerate: i32) {
+        self.framerate = framerate;
     }
 
     pub fn get_framerate(&self) -> i32 {

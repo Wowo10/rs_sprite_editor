@@ -147,25 +147,28 @@ impl<'a> Doodad<'a> {
         }
     }
 
-    // pub fn _load(
-    //     texture: &'a sdl2::render::Texture<'a>,
-    //     positions: Vec<sdl2::rect::Rect>,
-    //     rotations: Vec<f64>,
-    // ) -> Self {
-    //     let width = texture.query().width;
-    //     let heigth = texture.query().height;
+    pub fn load(
+        name: String,
+        texture: Rc<Texture<'a>>,
+        positions: Vec<sdl2::rect::Rect>,
+        rotations: Vec<f64>,
+        scale: f32
+    ) -> Self {
+        let width = texture.query().width;
+        let heigth = texture.query().height;
 
-    //     Doodad {
-    //         texture: texture,
-    //         source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),
-    //         positions: positions,
+        Doodad {
+            name: name,
+            texture: texture,
+            source_rect: sdl2::rect::Rect::new(0, 0, width, heigth),
+            positions: positions,
 
-    //         scale: 1.0,
-    //         rotations: rotations,
+            scale: scale,
+            rotations: rotations,
 
-    //         current: 0,
-    //     }
-    // }
+            current: 0,
+        }
+    }
 
     // pub fn serialize(&self, origin: sdl2::rect::Point) -> String {
     //     let mut temp = String::new();

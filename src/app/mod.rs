@@ -332,8 +332,38 @@ impl App {
                 MainMenuCommand::Load(path) => {
                     let lines = file_utils::load_file_by_lines(path);
 
-                    for line in lines{
+                    let first = lines.first().unwrap();
+
+                    let split = file_utils::split_line(first, ";"); //name;frames;framerate
+
+                    let frames = split[1].parse::<usize>().unwrap();
+
+                    spritesheet = Spritesheet::new(
+                        split[0].clone(),
+                        manager.get_spritesheet(&(split[0].clone() + ".png")),
+                        default_x,
+                        default_y,
+                        frames,
+                    );
+                    
+                    self.main_ui.set_framerate(split[2].parse::<i32>().unwrap());
+
+                    self.main_ui.reset(frames as i32);
+
+                    for line in lines.iter().skip(1){
                         println!("{}", line);
+
+                        let split = file_utils::split_line(line, ";");//name;scale;pos_x,pos_y,rot/...
+
+                        let doodad = Doodad::new(
+                            split[0].clone(),
+                            manager.get_doodad(&(split[0].clone() + ".png")),
+                            default_x,
+                            default_y,
+                            frames as u32
+                        );
+
+                        doodads.push(doodad);
                     }
                 }
                 MainMenuCommand::Exit => {
@@ -347,8 +377,8 @@ impl App {
                     doodads.push(Doodad::new(
                         name_clone,
                         texture,
-                        100,
-                        100,
+                        default_x,
+                        default_y,
                         spritesheet.get_frames_amount() as u32,
                     ));
                 }
