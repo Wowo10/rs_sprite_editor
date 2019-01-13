@@ -68,6 +68,8 @@ impl MainMenuInterface {
             }
             _ => {}
         }
+
+        self.list_directory.sort();
     }
 
     pub fn check(&mut self) -> MainMenuCommand {

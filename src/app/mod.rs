@@ -203,7 +203,7 @@ impl App {
                     }
 
                     Event::MouseMotion { xrel, yrel, .. } => {
-                        if doodads.len() != 0 && self.holding_button {
+                        if self.holding_button {
                             if self.holding_index {
                                 doodads.first_mut().unwrap().change_position(xrel, yrel);
                             } else {
