@@ -136,7 +136,7 @@ impl UserInterface for MainMenuInterface {
 
             WindowVisible::Load => {
                 ui.window(im_str!("Load File"))
-                    .size((300.0, 400.0), ImGuiCond::Once)
+                    .size((300.0, 300.0), ImGuiCond::Once)
                     .position((100.0, 100.0), ImGuiCond::Once)
                     .build(|| {
                         ui.child_frame(im_str!("child frame"), (280.0, 200.0))
@@ -170,7 +170,7 @@ impl UserInterface for MainMenuInterface {
 
             WindowVisible::Save => {
                 ui.window(im_str!("Save File"))
-                    .size((300.0, 400.0), ImGuiCond::Once)
+                    .size((300.0, 300.0), ImGuiCond::Once)
                     .position((100.0, 100.0), ImGuiCond::Once)
                     .build(|| {
                         ui.child_frame(im_str!("child frame"), (280.0, 200.0))
@@ -204,7 +204,7 @@ impl UserInterface for MainMenuInterface {
 
             WindowVisible::AddDoodad => {
                 ui.window(im_str!("Doodad choose"))
-                    .size((300.0, 400.0), ImGuiCond::Once)
+                    .size((300.0, 300.0), ImGuiCond::Once)
                     .position((100.0, 100.0), ImGuiCond::Once)
                     .build(|| {
                         ui.child_frame(im_str!("child frame"), (280.0, 200.0))
@@ -238,7 +238,7 @@ impl UserInterface for MainMenuInterface {
 
             WindowVisible::ChangeSpritesheet => {
                 ui.window(im_str!("SpriteSheet choose"))
-                    .size((300.0, 400.0), ImGuiCond::Once)
+                    .size((300.0, 300.0), ImGuiCond::Once)
                     .position((100.0, 100.0), ImGuiCond::Once)
                     .build(|| {
                         ui.child_frame(im_str!("child frame"), (280.0, 200.0))

@@ -55,8 +55,9 @@ impl MainInterface {
             if self.frame_timer.did_pass(self.framerate as u64) {
                 self.current_frame = (self.current_frame + 1) % self.frames_per_anim;
                 self.frame_timer.reset();
+
+                self.command = MainInterfaceCommand::Frame(self.current_frame);
             }
-            self.command = MainInterfaceCommand::Frame(self.current_frame);
         }
     }
 
@@ -96,7 +97,7 @@ impl MainInterface {
 impl UserInterface for MainInterface {
     fn draw_window(&mut self, ui: &Ui) {
         ui.window(im_str!("Main Panel"))
-            .size((300.0, 500.0), ImGuiCond::Once)
+            .size((500.0, 200.0), ImGuiCond::Once)
             .position((400.0, 140.0), ImGuiCond::Once)
             .build(|| {
                 if ui
@@ -139,7 +140,7 @@ impl UserInterface for MainInterface {
                     .chars_decimal(true)
                     .build()
                 {
-                    self.frame_timer.reset(); //TODO: Check if necessary
+                    self.frame_timer.reset();
                 }
 
                 if ui.checkbox(im_str!("play"), &mut self.play) {

@@ -24,7 +24,7 @@ pub struct App {
     main_menu_ui: MainMenuInterface,
 
     holding_button: bool,
-    holding_index: i32,
+    holding_index: bool,
     frame: i32,
 }
 
@@ -59,7 +59,7 @@ impl App {
             main_menu_ui: MainMenuInterface::new(),
 
             holding_button: false,
-            holding_index: -1,
+            holding_index: false,
             frame: 0,
         }
     }
@@ -163,7 +163,6 @@ impl App {
 
         while !self.exit {
             use sdl2::event::Event;
-            use sdl2::keyboard::Keycode;
 
             for event in event_pump.poll_iter() {
                 imgui_sdl2.handle_event(&mut imgui, &event);
@@ -172,53 +171,7 @@ impl App {
                 }
 
                 match event {
-                    Event::Quit { .. }
-                    | Event::KeyDown {
-                        keycode: Some(Keycode::Escape),
-                        ..
-                    } => self.exit = true,
-                    Event::KeyDown {
-                        keycode: Some(Keycode::Num1),
-                        ..
-                    } => {
-                        self.main_ui.scale = 1.0;
-                        self.main_ui.did_change = true;
-                    }
-                    Event::KeyDown {
-                        keycode: Some(Keycode::Num2),
-                        ..
-                    } => {
-                        self.main_ui.scale = 2.0;
-                        self.main_ui.did_change = true;
-                    }
-                    Event::KeyDown {
-                        keycode: Some(Keycode::Num3),
-                        ..
-                    } => {
-                        self.main_ui.scale = 3.0;
-                        self.main_ui.did_change = true;
-                    }
-                    Event::KeyDown {
-                        keycode: Some(Keycode::Num4),
-                        ..
-                    } => {
-                        self.main_ui.scale = 4.0;
-                        self.main_ui.did_change = true;
-                    }
-                    Event::KeyDown {
-                        keycode: Some(Keycode::Q),
-                        ..
-                    } => {
-                        println!("//////////////////////");
-                        println!("serialize1");
-                        println!("{}", spritesheet.serialize());
-                        for doodad in &doodads {
-                            println!(
-                                "{}",
-                                doodad.serialize(spritesheet.real_position().top_left())
-                            );
-                        }
-                    }
+                    Event::Quit { .. } => self.exit = true,
                     Event::MouseButtonDown { x, y, .. } => {
                         for i in 0..doodads.len() {
                             let check = check_rect(
@@ -235,7 +188,7 @@ impl App {
                                     doodads[i].get_scale(),
                                     doodads[i].get_rotation() as f32,
                                 );
-                                self.holding_index = 0; //i as i32; also -> probably will move to bool
+                                self.holding_index = true; //i as i32; also -> probably will move to bool
                                 App::bring_to_front(&mut doodads, i);
                                 break;
                             }
@@ -246,13 +199,13 @@ impl App {
 
                     Event::MouseButtonUp { .. } => {
                         self.holding_button = false;
-                        self.holding_index = -1;
+                        self.holding_index = false;
                     }
 
                     Event::MouseMotion { xrel, yrel, .. } => {
-                        if self.holding_button {
-                            if self.holding_index != -1 {
-                                doodads[self.holding_index as usize].change_position(xrel, yrel);
+                        if doodads.len() != 0 && self.holding_button {
+                            if self.holding_index {
+                                doodads.first_mut().unwrap().change_position(xrel, yrel);
                             } else {
                                 spritesheet.change_position(xrel, yrel);
                                 for doodad in &mut doodads {
@@ -269,10 +222,20 @@ impl App {
 
             match self.main_ui.check() {
                 MainInterfaceCommand::Scale(scale) => {
-                    doodads.first_mut().unwrap().set_scale(scale);
+                    match doodads.first_mut() {
+                        Some(first_doodad) => {
+                            first_doodad.set_scale(scale);
+                        }
+                        None => {}
+                    };
                 }
                 MainInterfaceCommand::Rotate(angle) => {
-                    doodads.first_mut().unwrap().set_rotation(angle.into());
+                    match doodads.first_mut() {
+                        Some(first_doodad) => {
+                            first_doodad.set_rotation(angle.into());
+                        }
+                        None => {}
+                    };
                 }
                 MainInterfaceCommand::Frame(frame) => {
                     for doodad in &mut doodads {
@@ -280,10 +243,14 @@ impl App {
                     }
                     spritesheet.set_frame(frame as usize);
                     self.frame = frame;
-                    if doodads.len() != 0 {
-                        self.main_ui
-                            .set_rotation(doodads.first().unwrap().get_rotation() as f32);
-                    }
+
+                    match doodads.first() {
+                        Some(first_doodad) => {
+                            self.main_ui
+                                .set_rotation(first_doodad.get_rotation() as f32);
+                        }
+                        None => {}
+                    };
                 }
                 _ => {}
             }
