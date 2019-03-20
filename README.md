@@ -1,4 +1,4 @@
-# rustimguisdl2tryout
+# rs_sprite_editor
 
 Project works properly only on not windows machines.
 Before running project it is needed to get SDL2 with it`s external features
