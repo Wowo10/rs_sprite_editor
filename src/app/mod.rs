@@ -1,6 +1,6 @@
 use lib::ImguiSdl2;
 
-use sdl2::image::{INIT_JPG, INIT_PNG};
+use sdl2::image::{InitFlag};
 use sdl2::pixels::Color;
 use sdl2::rect::Point;
 
@@ -98,7 +98,7 @@ impl App {
             Err(err) => panic!("SDL could not create a window! SDL_Error: {}.", err),
         };
 
-        sdl2::image::init(INIT_PNG | INIT_JPG).expect("Counld not init SDL Image.");
+        sdl2::image::init(InitFlag::PNG | InitFlag::JPG).expect("Counld not init SDL Image.");
 
         let gl_context = match window.gl_create_context() {
             Ok(gl_context) => gl_context,

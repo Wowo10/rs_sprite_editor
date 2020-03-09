@@ -22,7 +22,7 @@ impl Config {
         match self.buffer.get(key).cloned() {
             Some(review) => review.to_string(),
             None => {
-                let mut reader = BufReader::new(&self.config_file);
+                let reader = BufReader::new(&self.config_file);
 
                 for line in reader.lines() {
                     let [data_key, data_value] = Config::split_data(line.unwrap());

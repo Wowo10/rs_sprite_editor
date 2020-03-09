@@ -7,7 +7,7 @@ fn list_directory(path: &'static str) -> Vec<String> {
     let mut vec: Vec<String> = Vec::new();
 
     for path in paths {
-        let mut temp = path.unwrap().file_name().into_string().unwrap();
+        let temp = path.unwrap().file_name().into_string().unwrap();
 
         vec.push(temp.chars().take(temp.len() - 4).collect());
     }
